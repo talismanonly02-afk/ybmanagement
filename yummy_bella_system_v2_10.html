@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yummy Bella — Management System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0f0e0d;--sidebar:#181614;--surface:#1e1c19;--card:#252320;
+  --border:#2e2b27;--amber:#e8962a;--amber-dim:#c4781a;
+  --text:#f0ede8;--muted:#8a857d;--dim:#5a5550;
+  --good:#3a7d44;--good-bg:#1a3320;--good-text:#6ec97a;
+  --avg:#7a6020;--avg-bg:#2e2510;--avg-text:#d4a635;
+  --short:#7a3a20;--short-bg:#2e1510;--short-text:#e07855;
+  --oos:#3a2020;--oos-bg:#1e1010;--oos-text:#a05050;
+  --info:#2a5a8a;--info-bg:#0f1e30;--info-text:#5aabea;
+  --pur-bg:#1c1430;--pur-text:#b490f5;
+  --red:#c0392b;--red-bg:#2e0f0f;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+/* LOGIN */
+#ls{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lb{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px 44px;width:380px;text-align:center;}
+.ll{font-family:'DM Serif Display',serif;color:var(--amber);font-size:28px;margin-bottom:5px;}
+.ls2{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:30px;}
+.lf{display:flex;flex-direction:column;gap:5px;text-align:left;margin-bottom:14px;}
+.lf label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+.lf input{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s;width:100%;}
+.lf input:focus{border-color:var(--amber);}
+.lbtn{width:100%;padding:11px;background:var(--amber);color:#0f0e0d;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px;transition:background .15s;}
+.lbtn:hover{background:var(--amber-dim);}
+.lerr{color:var(--oos-text);font-size:12px;margin-top:10px;display:none;}
+/* APP */
+.app{display:none;min-height:100vh;}
+.app.v{display:flex;}
+.sidebar{width:222px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;overflow-y:auto;z-index:100;}
+.logo{padding:20px 20px 14px;border-bottom:1px solid var(--border);}
+.logo h1{font-family:'DM Serif Display',serif;color:var(--amber);font-size:20px;}
+.logo p{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:.07em;text-transform:uppercase;}
+.nl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);padding:10px 20px 3px;}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;transition:all .15s;color:var(--muted);font-size:13px;border-left:2px solid transparent;}
+.ni:hover{color:var(--text);background:var(--surface);}
+.ni.active{color:var(--amber);background:rgba(232,150,42,.08);border-left-color:var(--amber);}
+.nfoot{margin-top:auto;padding:13px 20px;border-top:1px solid var(--border);}
+.nfu{font-size:12px;color:var(--text);font-weight:500;}
+.nfr{font-size:11px;color:var(--muted);margin-top:1px;}
+.savebtn{margin-top:6px;width:100%;padding:7px;background:var(--good-bg);border:1px solid var(--good);border-radius:6px;color:var(--good-text);font-size:12px;cursor:pointer;transition:all .15s;}
+.savebtn:hover{background:var(--good);color:#0f0e0d;}
+.logoutb{margin-top:6px;width:100%;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;}
+.logoutb:hover{border-color:var(--short-text);color:var(--short-text);}
+.main{margin-left:222px;flex:1;}
+.topbar{background:var(--sidebar);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.pt{font-size:15px;font-weight:500;}
+.ps{font-size:11px;color:var(--muted);margin-top:2px;}
+.content{padding:20px 26px;}
+.section{display:none;}.section.active{display:block;}
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.slb{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.sv{font-size:21px;font-weight:500;}
+.ssb{font-size:11px;color:var(--muted);margin-top:3px;}
+.sa{color:var(--amber);}
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+.ch{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ct{font-size:13px;font-weight:500;}
+/* TABLES */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+thead tr{background:var(--surface);}
+th{padding:8px 12px;text-align:left;font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:8px 12px;border-bottom:1px solid rgba(46,43,39,.45);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:500;white-space:nowrap;}
+.bg2{background:var(--good-bg);color:var(--good-text);}
+.ba2{background:var(--avg-bg);color:var(--avg-text);}
+.bs2{background:var(--short-bg);color:var(--short-text);}
+.bo2{background:var(--oos-bg);color:var(--oos-text);}
+.bi2{background:var(--info-bg);color:var(--info-text);}
+.bp2{background:var(--pur-bg);color:var(--pur-text);}
+/* TOOLBAR */
+.tb2{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.sw{position:relative;}
+.sw input{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 12px 7px 30px;color:var(--text);font-size:12.5px;outline:none;transition:border-color .15s;width:210px;}
+.sw input:focus{border-color:var(--amber);}
+.si{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:12px;pointer-events:none;}
+select{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12.5px;outline:none;cursor:pointer;}
+select:focus{border-color:var(--amber);}
+select option{background:var(--surface);}
+/* FORMS */
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+input,textarea{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .15s;width:100%;}
+input:focus,textarea:focus{border-color:var(--amber);}
+.fa{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px;}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;border:none;}
+.bp3{background:var(--amber);color:#0f0e0d;}
+.bp3:hover{background:var(--amber-dim);}
+.bg3{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.bg3:hover{background:var(--surface);color:var(--text);}
+.bok{background:var(--good-bg);color:var(--good-text);border:1px solid var(--good);}
+.bok:hover{background:var(--good);color:#fff;}
+.bsm{padding:3px 9px;font-size:11px;}
+/* PIPELINE */
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;padding:14px 16px;}
+.pcol{background:var(--surface);border:1px solid var(--border);border-radius:8px;min-height:180px;display:flex;flex-direction:column;}
+.pch{padding:9px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.pct{font-size:12px;font-weight:500;}
+.pcn{background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:10px;padding:1px 7px;color:var(--muted);}
+.pcards{padding:9px;display:flex;flex-direction:column;gap:7px;flex:1;}
+.pcard{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:9px 11px;}
+.pcode{font-size:10px;color:var(--amber);font-family:monospace;margin-bottom:2px;}
+.pdesc{font-size:11px;line-height:1.4;margin-bottom:5px;}
+.pmeta{font-size:10.5px;color:var(--muted);}
+.pacts{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+.pempty{color:var(--dim);font-size:11.5px;text-align:center;padding:22px 10px;}
+/* DELIVERY */
+.dc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 15px;margin-bottom:9px;}
+.str{display:flex;align-items:center;margin:9px 0 5px;}
+.sdot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;}
+.sln{flex:1;height:2px;}
+.sdo .sdot{background:var(--good-bg);color:var(--good-text);border:1px solid var(--good);}
+.sac .sdot{background:rgba(232,150,42,.15);color:var(--amber);border:1px solid var(--amber);}
+.spd .sdot{background:var(--card);color:var(--dim);border:1px solid var(--border);}
+.sln.dn{background:var(--good);}
+.sln.pd{background:var(--border);}
+/* AUDIT */
+.le{display:flex;gap:11px;padding:10px 16px;border-bottom:1px solid rgba(46,43,39,.4);}
+.le:last-child{border-bottom:none;}
+.ld{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.lm{font-size:12.5px;line-height:1.5;}
+.lmt{font-size:10.5px;color:var(--muted);margin-top:2px;}
+/* BACKUP */
+.bkg{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;padding:14px 16px;}
+.bkc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:border-color .15s;}
+.bkc:hover{border-color:var(--amber);}
+.bki{font-size:20px;margin-bottom:6px;}
+.bkt{font-size:13px;font-weight:500;margin-bottom:3px;}
+.bkd{font-size:11px;color:var(--muted);}
+/* MODAL */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:800;display:none;align-items:center;justify-content:center;}
+.mbg.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;width:480px;max-height:80vh;overflow-y:auto;}
+.mh{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.mhc{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer;line-height:1;}
+.mhc:hover{color:var(--text);}
+.mb{padding:16px;}
+.mac{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+/* MISC */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.tm{color:var(--muted);}
+.ta{color:var(--amber);}
+code{font-size:11px;color:var(--amber);font-family:monospace;}
+.cw{padding:15px;height:270px;}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--amber);border-radius:8px;padding:10px 16px;font-size:12.5px;color:var(--amber);z-index:9999;display:none;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+.ti{width:62px;padding:4px 6px;font-size:12px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);}
+.ti:focus{border-color:var(--amber);outline:none;}
+/* STOCK NOTIFICATIONS */
+.notif-panel{margin-bottom:14px;}
+.notif-item{display:flex;align-items:center;gap:9px;padding:8px 14px;border-radius:7px;margin-bottom:6px;font-size:12px;}
+.notif-oos{background:var(--oos-bg);border:1px solid rgba(160,80,80,.3);color:var(--oos-text);}
+.notif-short{background:var(--short-bg);border:1px solid rgba(122,58,32,.3);color:var(--short-text);}
+.notif-avg{background:var(--avg-bg);border:1px solid rgba(122,96,32,.3);color:var(--avg-text);}
+/* QUICK OVERVIEW */
+.qov{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 16px;}
+.qov-card{border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:11px;}
+.qov-icon{font-size:20px;}
+.qov-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.qov-val{font-size:22px;font-weight:600;}
+.qov-good{background:var(--good-bg);border:1px solid rgba(58,125,68,.25);color:var(--good-text);}
+.qov-avg{background:var(--avg-bg);border:1px solid rgba(122,96,32,.25);color:var(--avg-text);}
+.qov-short{background:var(--short-bg);border:1px solid rgba(122,58,32,.25);color:var(--short-text);}
+.qov-oos{background:var(--oos-bg);border:1px solid rgba(160,80,80,.25);color:var(--oos-text);}
+select option:disabled{color:var(--dim)!important;}
+/* MULTI-LINE ITEM BUILDER */
+.li-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.li-table th{padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);}
+.li-table td{padding:6px 8px;border-bottom:1px solid rgba(46,43,39,.35);vertical-align:middle;}
+.li-table tr:last-child td{border-bottom:none;}
+.li-table select,.li-table input[type=number]{font-size:12px;padding:5px 8px;border-radius:5px;}
+.li-table select{min-width:200px;}
+.li-table input[type=number]{width:72px;text-align:center;}
+.li-wrap{padding:10px 14px 4px;}
+.li-add{display:inline-flex;align-items:center;gap:5px;margin:8px 14px 10px;padding:5px 13px;background:transparent;border:1px dashed var(--border);border-radius:6px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;}
+.li-add:hover{border-color:var(--amber);color:var(--amber);}
+.li-rm{background:none;border:none;color:var(--dim);font-size:15px;cursor:pointer;padding:0 4px;line-height:1;transition:color .12s;}
+.li-rm:hover{color:var(--short-text);}
+.li-badge-oos{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:10px;background:var(--oos-bg);color:var(--oos-text);margin-left:4px;vertical-align:middle;}
+/* CUSTOMER AUTOCOMPLETE */
+.cust-autofill{display:none;align-items:center;gap:7px;padding:6px 12px;background:rgba(58,125,68,.12);border:1px solid rgba(58,125,68,.3);border-radius:6px;margin:0 14px 8px;font-size:11.5px;color:var(--good-text);}
+.cust-autofill.show{display:flex;}
+.cust-autofill strong{font-weight:600;}
+.cust-autofill button{margin-left:auto;background:none;border:1px solid var(--good);color:var(--good-text);border-radius:5px;padding:2px 9px;font-size:11px;cursor:pointer;}
+.cust-autofill button:hover{background:var(--good-bg);}
+/* DEDUCT FLASH */
+@keyframes deductFlash{0%{background:rgba(192,57,43,.18)}100%{background:transparent}}
+.inv-deducted{animation:deductFlash 1.4s ease-out;}
+.cust-block{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;padding:12px 14px 10px;border-bottom:1px solid var(--border);background:rgba(232,150,42,.03);}
+.cust-tag{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--amber);font-weight:500;padding:0 14px 6px;margin-top:10px;display:flex;align-items:center;gap:6px;}
+.cust-tag::before{content:'';display:block;height:1px;flex:0 0 6px;background:var(--amber);opacity:.4;}
+.cust-tag::after{content:'';display:block;height:1px;flex:1;background:var(--border);}
+/* divider between sections */
+.form-divider{height:1px;background:var(--border);margin:0;}
+.order-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:12px 14px 10px;border-bottom:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="ls">
+  <div class="lb">
+    <div class="ll">Yummy Bella</div>
+    <div class="ls2">Management System · Head Office</div>
+    <div class="lf"><label>Username</label><input type="text" id="liu" placeholder="Enter username" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="lf"><label>Password</label><input type="password" id="lip" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="lbtn" onclick="doLogin()">Sign In</button>
+    <div class="lerr" id="lerr">Invalid credentials. Please try again.</div>
+    <div style="margin-top:16px;font-size:11px;color:var(--dim)">🔒 Authorized personnel only</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div class="app" id="app">
+  <nav class="sidebar">
+    <div class="logo"><h1>Yummy Bella</h1><p>Head Office · HO</p></div>
+    <div style="padding:8px 0;">
+      <div class="nl">Main Workflow</div>
+      <div class="ni active" onclick="nav('receiving')"><span style="width:16px;text-align:center">📥</span> Receiving</div>
+      <div class="ni" onclick="nav('inventory')"><span style="width:16px;text-align:center">📦</span> Inventory</div>
+      <div class="ni" onclick="nav('orders')"><span style="width:16px;text-align:center">🛒</span> Orders</div>
+      <div class="ni" onclick="nav('dailysales')"><span style="width:16px;text-align:center">📅</span> Daily Sales</div>
+      <div class="ni" onclick="nav('sales')"><span style="width:16px;text-align:center">💰</span> Sales</div>
+      <div class="ni" onclick="nav('reports')"><span style="width:16px;text-align:center">📊</span> Monthly Reports</div>
+    </div>
+    <div style="padding:8px 0;">
+      <div class="nl">Operations</div>
+      <div class="ni" onclick="nav('returns')"><span style="width:16px;text-align:center">↩️</span> Returns</div>
+      <div class="ni" onclick="nav('deliveries')"><span style="width:16px;text-align:center">🚛</span> Deliveries</div>
+      <div class="ni" onclick="nav('backup')"><span style="width:16px;text-align:center">💾</span> Backup System</div>
+      <div class="ni" onclick="nav('expiration')"><span style="width:16px;text-align:center">⏰</span> Expiration Tracking</div>
+      <div class="ni" onclick="toggleWarehouse()"><span style="width:16px;text-align:center">🏭</span> Warehouse</div>
+      <div id="warehouse-dropdown" style="display:none;">
+        <div class="ni" onclick="nav('freezer1')" style="padding-left:30px;"><span style="width:16px;text-align:center">❄️</span> Freezer 1</div>
+        <div class="ni" onclick="nav('freezer2')" style="padding-left:30px;"><span style="width:16px;text-align:center">❄️</span> Freezer 2</div>
+        <div class="ni" onclick="nav('freezer3')" style="padding-left:30px;"><span style="width:16px;text-align:center">❄️</span> Freezer 3</div>
+      </div>
+    </div>
+    <div class="nfoot">
+      <div class="nfu" id="sfu">—</div>
+      <div class="nfr" id="sfr">—</div>
+      <button class="logoutb" onclick="doLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div><div class="pt" id="pt">Receiving Stocks</div><div class="ps" id="ps">Head Office · Mar 4–14, 2026</div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+        <div style="font-size:11px;color:var(--muted)" id="clock"></div>
+        <div style="font-size:10px;color:var(--good-text);opacity:0;transition:opacity 0.3s" id="save-status">💾 Saved</div>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- ▓▓ RECEIVING ▓▓ -->
+      <div class="section active" id="sec-receiving">
+        <div class="sg">
+          <div class="sc"><div class="slb">Total SKUs</div><div class="sv sa">38</div><div class="ssb">Products tracked</div></div>
+          <div class="sc"><div class="slb">Pending Approval</div><div class="sv" id="rp" style="color:var(--avg-text)">38</div><div class="ssb">Awaiting review</div></div>
+          <div class="sc"><div class="slb">Approved</div><div class="sv" id="ra" style="color:var(--good-text)">0</div><div class="ssb">Confirmed to inventory</div></div>
+          <div class="sc"><div class="slb">Out of Stock</div><div class="sv" style="color:var(--oos-text)">24</div><div class="ssb">Require restocking</div></div>
+        </div>
+        <div class="card">
+          <div class="ch">
+            <span class="ct">Receiving Stocks — Warehouse Inventory (Mar 4–14, 2026)</span>
+            <div style="display:flex;gap:7px">
+              <button class="btn bok bsm" onclick="approveAll()">✓ Approve All</button>
+              <button class="btn bg3 bsm" onclick="xTbl('tbl-rec','receiving')">⬇ Export</button>
+            </div>
+          </div>
+          <div class="tb2">
+            <div class="sw"><span class="si">🔍</span><input placeholder="Search item…" oninput="filt(this,'tbl-rec')"></div>
+            <select onchange="filtCol(this,'tbl-rec',10)">
+              <option value="">All conditions</option>
+              <option>Good</option><option>Average</option><option>Short on Stock</option><option>Out of Stock</option>
+            </select>
+            <select onchange="filtCol(this,'tbl-rec',11)">
+              <option value="">All statuses</option><option>Pending</option><option>Approved</option>
+            </select>
+          </div>
+          <div class="tw"><table id="tbl-rec">
+            <thead><tr><th>Item Code</th><th>Description</th><th>Conv</th><th>End (Cases)</th><th>End (Pcs)</th><th>Rcv Cases</th><th>Rcv Pcs</th><th>Beg Cases</th><th>Beg Pcs</th><th>C&amp;P Total</th><th>Condition</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="rec-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ INVENTORY ▓▓ -->
+      <div class="section" id="sec-inventory">
+        <div class="sg">
+          <div class="sc"><div class="slb">Total Value</div><div class="sv sa" id="ivt">&#8369;28,312</div><div class="ssb">Ending inventory</div></div>
+          <div class="sc"><div class="slb">Cases Value</div><div class="sv" id="ivc">&#8369;23,090</div></div>
+          <div class="sc"><div class="slb">Pcs Value</div><div class="sv" id="ivp">&#8369;5,222</div></div>
+          <div class="sc"><div class="slb">Active SKUs</div><div class="sv sa" id="iva">14</div><div class="ssb">Of 38 total</div></div>
+        </div>
+        <!-- Quick Stock Overview -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="ch"><span class="ct">&#128202; Quick Stock Overview</span><span style="font-size:11px;color:var(--muted)">Live stock condition summary</span></div>
+          <div class="qov">
+            <div class="qov-card qov-good"><div class="qov-icon">&#9989;</div><div><div class="qov-label">Good Stock</div><div class="qov-val" id="qov-good">0</div></div></div>
+            <div class="qov-card qov-avg"><div class="qov-icon">&#128993;</div><div><div class="qov-label">Average</div><div class="qov-val" id="qov-avg">0</div></div></div>
+            <div class="qov-card qov-short"><div class="qov-icon">&#9888;&#65039;</div><div><div class="qov-label">Short on Stock</div><div class="qov-val" id="qov-short">0</div></div></div>
+            <div class="qov-card qov-oos"><div class="qov-icon">&#128308;</div><div><div class="qov-label">Out of Stock</div><div class="qov-val" id="qov-oos">0</div></div></div>
+          </div>
+          <div id="inv-notifs" style="padding:0 14px 14px"></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Warehouse Inventory &middot; Live View</span><button class="btn bg3 bsm" onclick="xTbl('tbl-inv','inventory')">&#11015; Export</button></div>
+          <div class="tb2">
+            <div class="sw"><span class="si">🔍</span><input placeholder="Search item…" oninput="filt(this,'tbl-inv')"></div>
+            <select onchange="filtCol(this,'tbl-inv',10)">
+              <option value="">All conditions</option>
+              <option>Good</option><option>Average</option><option>Short on Stock</option><option>Out of Stock</option>
+            </select>
+          </div>
+          <div class="tw"><table id="tbl-inv">
+            <thead><tr><th>Item Code</th><th>Description</th><th>Conv</th><th>End Cases</th><th>End Pcs</th><th>Last Cost</th><th>Val Cases</th><th>Val Pcs</th><th>Total Value</th><th>Storage</th><th>Condition</th></tr></thead>
+            <tbody id="inv-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ ORDERS ▓▓ -->
+      <div class="section" id="sec-orders">
+        <div class="sg">
+          <div class="sc"><div class="slb">Pending</div><div class="sv" style="color:var(--avg-text)" id="op1">0</div></div>
+          <div class="sc"><div class="slb">Confirmed</div><div class="sv bi2" id="op2">0</div></div>
+          <div class="sc"><div class="slb">In Transit</div><div class="sv bp2" id="op3">0</div></div>
+          <div class="sc"><div class="slb">Fulfilled</div><div class="sv sa" id="op4">0</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Place New Order</span><span style="font-size:11px;color:var(--muted)">Add multiple SKUs in one order</span></div>
+          <!-- Customer Info -->
+          <div class="cust-tag">&#128100; Customer Information</div>
+          <div class="cust-autofill" id="cust-autofill-banner">
+            <span>&#9989; Returning customer — <strong id="cust-matched-name"></strong></span>
+            <span style="color:var(--muted);font-size:10.5px" id="cust-matched-detail"></span>
+            <button onclick="clearCustAutofill()">Change</button>
+          </div>
+          <div class="cust-block" id="cust-fields-block">
+            <div class="fg"><label>Customer Name</label>
+              <input type="text" id="ocname" placeholder="Full name or store name" list="cust-datalist" oninput="onCustNameInput(this.value)" onchange="onCustNameSelect(this.value)" autocomplete="off">
+              <datalist id="cust-datalist"></datalist>
+            </div>
+            <div class="fg"><label>Contact No.</label><input type="text" id="ocphone" placeholder="09xx-xxx-xxxx"></div>
+            <div class="fg"><label>Address / Area</label><input type="text" id="ocaddr" placeholder="Barangay, City"></div>
+            <div class="fg"><label>Customer Type</label>
+              <select id="octype">
+                <option value="">Select type&hellip;</option>
+                <option>Retailer</option>
+                <option>Wholesaler</option>
+                <option>Distributor</option>
+                <option>Walk-in</option>
+                <option>Online</option>
+                <option>Regular</option>
+              </select>
+            </div>
+          </div>
+          <!-- Order header fields -->
+          <div class="cust-tag">&#128203; Order Details</div>
+          <div class="order-meta" style="grid-template-columns:1fr 1fr 1fr 1fr">
+            <div class="fg"><label>Order Date</label><input type="date" id="od"></div>
+            <div class="fg"><label>Supplier Ref / PO#</label><input type="text" id="or2" placeholder="PO number or reference"></div>
+            <div class="fg"><label>💳 Payment Method</label>
+              <select id="opm">
+                <option value="">Select payment…</option>
+                <optgroup label="📱 E-Wallet">
+                  <option value="GCash">GCash</option>
+                  <option value="Maya">Maya (PayMaya)</option>
+                  <option value="ShopeePay">ShopeePay</option>
+                  <option value="GrabPay">GrabPay</option>
+                </optgroup>
+                <optgroup label="🏦 Bank Transfer">
+                  <option value="BDO Transfer">BDO Bank Transfer</option>
+                  <option value="BPI Transfer">BPI Bank Transfer</option>
+                  <option value="UnionBank Transfer">UnionBank Transfer</option>
+                  <option value="Metrobank Transfer">Metrobank Transfer</option>
+                  <option value="Landbank Transfer">Landbank Transfer</option>
+                  <option value="PNB Transfer">PNB Transfer</option>
+                </optgroup>
+                <optgroup label="💵 Cash & Others">
+                  <option value="Cash">Cash</option>
+                  <option value="COD">Cash on Delivery (COD)</option>
+                  <option value="Cheque">Cheque</option>
+                  <option value="Credit Card">Credit / Debit Card</option>
+                  <option value="Terms/Credit">Terms / Credit Account</option>
+                  <option value="Installment">Installment</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="fg"><label>Notes</label><input type="text" id="on" placeholder="Special instructions&hellip;"></div>
+          </div>
+          <!-- Line items -->
+          <div class="li-wrap">
+            <table class="li-table" id="order-li-tbl">
+              <thead><tr><th>#</th><th>SKU / Item</th><th>Cases</th><th>Pcs</th><th></th></tr></thead>
+              <tbody id="order-li-body"></tbody>
+            </table>
+          </div>
+          <button class="li-add" onclick="addOrderLine()">+ Add Item</button>
+          <div id="order-oos-banner" style="display:none;margin:4px 14px 8px;padding:8px 12px;background:var(--oos-bg);border:1px solid rgba(160,80,80,.4);border-radius:7px;color:var(--oos-text);font-size:12px"></div>
+          <div class="fa"><button class="btn bp3" id="addOrderBtn" onclick="submitOrder()">&#128722; Submit Order</button><button class="btn bg3" onclick="clearOF()">Clear</button></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Order Pipeline</span><span style="font-size:11px;color:var(--muted)">Pending → Confirmed → In Transit → Fulfilled</span></div>
+          <div class="pipeline" id="pipeboard"></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ DAILY SALES ▓▓ -->
+      <div class="section" id="sec-dailysales">
+        <div class="sg">
+          <div class="sc"><div class="slb">Today's Sales</div><div class="sv sa" id="ds1">&#8369;0</div><div class="ssb">Gross before discount</div></div>
+          <div class="sc"><div class="slb">Net Sales Today</div><div class="sv" style="color:var(--good-text)" id="ds2">&#8369;0</div></div>
+          <div class="sc"><div class="slb">Pcs Sold Today</div><div class="sv" id="ds3">0</div></div>
+          <div class="sc"><div class="slb">Fulfilled Orders</div><div class="sv sa" id="ds4">0</div><div class="ssb">All time</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">&#128197; Daily Sales Log</span><span style="font-size:11px;color:var(--muted)">Auto-populated when orders are Fulfilled</span>
+            <div style="display:flex;gap:7px;align-items:center">
+              <input type="date" id="ds-filter-date" style="font-size:11px;padding:4px 8px;width:140px" onchange="rDailySales()">
+              <button class="btn bg3 bsm" onclick="document.getElementById('ds-filter-date').value='';rDailySales()">All dates</button>
+              <button class="btn bg3 bsm" onclick="xTbl('ds-tbl','daily_sales')">&#11015; Export</button>
+            </div>
+          </div>
+          <div class="tw"><table id="ds-tbl">
+            <thead><tr>
+              <th>Date</th><th>Customer</th><th>Type</th><th>Item Code</th><th>Description</th>
+              <th>Conv</th><th>Pcs Sold</th><th>Price/Pc</th><th>Gross</th>
+              <th>Disc 15%</th><th>Disc 3%</th><th>Disc 2%</th><th>Net Sales</th><th>Discounts</th>
+            </tr></thead>
+            <tbody id="ds-body"></tbody>
+          </table></div>
+          <div id="ds-empty" style="text-align:center;padding:26px;color:var(--muted);font-size:13px">No daily sales yet. Fulfill an order from the pipeline to record sales.</div>
+        </div>
+        <!-- Daily totals summary -->
+        <div class="card" id="ds-summary-card" style="display:none">
+          <div class="ch"><span class="ct">&#128202; Day Summary</span></div>
+          <div id="ds-summary" style="padding:14px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px"></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ SALES ▓▓ -->
+      <div class="section" id="sec-sales">
+        <div class="sg">
+          <div class="sc"><div class="slb">Total Sales</div><div class="sv sa">₱26,219</div></div>
+          <div class="sc"><div class="slb">Case Revenue</div><div class="sv">₱19,786</div></div>
+          <div class="sc"><div class="slb">Pcs Revenue</div><div class="sv">₱6,433</div></div>
+          <div class="sc"><div class="slb">Products Sold</div><div class="sv sa">20</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Overall Sales — Mar 4–14, 2026</span><button class="btn bg3 bsm" onclick="xTbl('tbl-s','sales')">⬇ Export</button></div>
+          <div class="tb2"><div class="sw"><span class="si">🔍</span><input placeholder="Search item…" oninput="filt(this,'tbl-s')"></div></div>
+          <div class="tw"><table id="tbl-s">
+            <thead><tr><th>Item Code</th><th>Description</th><th>Conv</th><th>Beg Cases</th><th>Conv Pcs</th><th>End Cases</th><th>End Pcs</th><th>Sales Pcs</th><th>Sales Cases ₱</th><th>Sales Pcs ₱</th><th>Total Sales</th><th>Unit Cost</th></tr></thead>
+            <tbody id="s-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ REPORTS ▓▓ -->
+      <div class="section" id="sec-reports">
+        <div class="sg">
+          <div class="sc"><div class="slb">Inventory Value</div><div class="sv sa">₱28,312</div></div>
+          <div class="sc"><div class="slb">Total Revenue</div><div class="sv">₱26,219</div></div>
+          <div class="sc"><div class="slb">Stock Utilization</div><div class="sv sa">37%</div><div class="ssb">14 of 38 SKUs active</div></div>
+          <div class="sc"><div class="slb">Top Product</div><div class="sv" style="font-size:11px;padding-top:5px">Pork Tocino 450</div><div class="ssb">₱2,913 revenue</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="card"><div class="ch"><span class="ct">Top 10 by Sales</span></div><div class="cw"><canvas id="ch1"></canvas></div></div>
+          <div class="card"><div class="ch"><span class="ct">Stock Conditions</span></div><div class="cw"><canvas id="ch2"></canvas></div></div>
+        </div>
+        <div class="card"><div class="ch"><span class="ct">Inventory Value by Product</span></div><div class="cw" style="height:290px"><canvas id="ch3"></canvas></div></div>
+      </div>
+
+      <!-- ▓▓ RETURNS ▓▓ -->
+      <div class="section" id="sec-returns">
+        <div class="sg">
+          <div class="sc"><div class="slb">Total Returns</div><div class="sv sa" id="rt1">0</div></div>
+          <div class="sc"><div class="slb">Units Returned</div><div class="sv" id="rt2">0</div></div>
+          <div class="sc"><div class="slb">Pending Review</div><div class="sv" style="color:var(--avg-text)" id="rt3">0</div></div>
+          <div class="sc"><div class="slb">Approved → Inventory</div><div class="sv" style="color:var(--good-text)" id="rt4">0</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Log a Return</span></div>
+          <div class="fg2">
+            <div class="fg"><label>Item</label><select id="reti"><option value="">Select item…</option></select></div>
+            <div class="fg"><label>Quantity (Pcs)</label><input type="number" id="retq" placeholder="0" min="1"></div>
+            <div class="fg"><label>Return Date</label><input type="date" id="retd"></div>
+            <div class="fg"><label>Reason</label>
+              <select id="retr">
+                <option value="">Select reason…</option>
+                <option>Damaged / Spoiled</option><option>Wrong item delivered</option>
+                <option>Customer return</option><option>Near expiry</option>
+                <option>Overstock</option><option>Quality issue</option>
+              </select>
+            </div>
+            <div class="fg" style="grid-column:span 2"><label>Notes</label><textarea id="retn" placeholder="Additional details…" style="resize:vertical;height:52px;"></textarea></div>
+          </div>
+          <div class="fa"><button class="btn bp3" onclick="submitReturn()">Log Return</button><button class="btn bg3" onclick="clearRet()">Clear</button></div>
+        </div>
+        <div class="card" id="retlog" style="display:none">
+          <div class="ch"><span class="ct">Return Log</span></div>
+          <div class="tw"><table><thead><tr><th>#</th><th>Code</th><th>Description</th><th>Qty</th><th>Reason</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="ret-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ DELIVERIES ▓▓ -->
+      <div class="section" id="sec-deliveries">
+        <div class="sg">
+          <div class="sc"><div class="slb">Active</div><div class="sv sa" id="dl1">0</div></div>
+          <div class="sc"><div class="slb">Delivered</div><div class="sv" style="color:var(--good-text)" id="dl2">0</div></div>
+          <div class="sc"><div class="slb">Loading</div><div class="sv" id="dl3">0</div></div>
+          <div class="sc"><div class="slb">Drivers</div><div class="sv" id="dl4">0</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Add Delivery</span><span style="font-size:11px;color:var(--muted)">Assign multiple items per trip</span></div>
+          <!-- Customer / Recipient Info -->
+          <div class="cust-tag">&#128100; Recipient / Customer</div>
+          <div class="cust-block">
+            <div class="fg"><label>Customer Name</label><input type="text" id="dlcname" placeholder="Full name or store name"></div>
+            <div class="fg"><label>Contact No.</label><input type="text" id="dlcphone" placeholder="09xx-xxx-xxxx"></div>
+            <div class="fg"><label>Customer Type</label>
+              <select id="dlctype">
+                <option value="">Select type&hellip;</option>
+                <option>Retailer</option>
+                <option>Wholesaler</option>
+                <option>Distributor</option>
+                <option>Walk-in</option>
+                <option>Online</option>
+                <option>Regular</option>
+              </select>
+            </div>
+            <div class="fg"><label>Delivery Notes</label><input type="text" id="dlnotes" placeholder="e.g. Call upon arrival"></div>
+          </div>
+          <!-- Logistics -->
+          <div class="cust-tag">&#128666; Logistics</div>
+          <div class="order-meta">
+            <div class="fg"><label>Driver Name</label><input type="text" id="dld" placeholder="Full name"></div>
+            <div class="fg"><label>Destination / Address</label><input type="text" id="dlde" placeholder="Delivery address"></div>
+            <div class="fg"><label>Dispatch Date/Time</label><input type="datetime-local" id="dldt"></div>
+          </div>
+          <div class="li-wrap">
+            <table class="li-table" id="del-li-tbl">
+              <thead><tr><th>#</th><th>SKU / Item</th><th>Cases</th><th>Pcs</th><th></th></tr></thead>
+              <tbody id="del-li-body"></tbody>
+            </table>
+          </div>
+          <button class="li-add" onclick="addDelLine()">&#43; Add Item</button>
+          <div class="fa"><button class="btn bp3" onclick="addDel()">&#128666; Add Delivery</button></div>
+        </div>
+        <div class="card"><div class="ch"><span class="ct">Delivery Tracker</span></div><div id="dllist" style="padding:13px 16px"></div></div>
+      </div>
+
+      <!-- ▓▓ AUDIT LOGS ▓▓ -->
+      <div class="section" id="sec-auditlogs">
+        <div class="sg">
+          <div class="sc"><div class="slb">Total Events</div><div class="sv sa" id="al1">0</div></div>
+          <div class="sc"><div class="slb">Orders</div><div class="sv" id="al2">0</div></div>
+          <div class="sc"><div class="slb">Returns</div><div class="sv" id="al3">0</div></div>
+          <div class="sc"><div class="slb">Deliveries</div><div class="sv" id="al4">0</div></div>
+        </div>
+        <div class="card">
+          <div class="ch">
+            <span class="ct">System Audit Log</span>
+            <div style="display:flex;gap:7px;align-items:center">
+              <select id="alf" onchange="renderAudit()" style="font-size:11px;padding:4px 8px">
+                <option value="">All types</option>
+                <option value="auth">Auth</option><option value="receiving">Receiving</option>
+                <option value="order">Orders</option><option value="return">Returns</option>
+                <option value="inventory">Inventory</option><option value="delivery">Deliveries</option>
+                <option value="system">System</option>
+              </select>
+              <button class="btn bg3 bsm" onclick="clearAudit()">Clear</button>
+            </div>
+          </div>
+          <div id="allist"></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ BACKUP ▓▓ -->
+      <div class="section" id="sec-backup">
+        <div class="sg">
+          <div class="sc"><div class="slb">Last Export</div><div class="sv" style="font-size:12px;padding-top:4px" id="bklast">Never</div></div>
+          <div class="sc"><div class="slb">SKU Records</div><div class="sv sa">38</div></div>
+          <div class="sc"><div class="slb">Version</div><div class="sv" style="font-size:12px;padding-top:4px">v2.7.0</div></div>
+          <div class="sc"><div class="slb">Formats</div><div class="sv" style="font-size:12px;padding-top:4px">CSV · JSON</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Export Data</span></div>
+          <div class="bkg">
+            <div class="bkc" onclick="bk('inventory')"><div class="bki">📦</div><div class="bkt">Inventory</div><div class="bkd">All 38 SKUs with live values</div></div>
+            <div class="bkc" onclick="bk('sales')"><div class="bki">💰</div><div class="bkt">Sales Data</div><div class="bkd">Overall sales by product</div></div>
+            <div class="bkc" onclick="bk('receiving')"><div class="bki">📥</div><div class="bkt">Receiving</div><div class="bkd">Stock receiving with approval status</div></div>
+            <div class="bkc" onclick="bk('orders')"><div class="bki">🛒</div><div class="bkt">Orders</div><div class="bkd">Full order pipeline data</div></div>
+            <div class="bkc" onclick="bk('returns')"><div class="bki">↩️</div><div class="bkt">Returns Log</div><div class="bkd">All return entries</div></div>
+            <div class="bkc" onclick="bk('full')"><div class="bki">💾</div><div class="bkt">Full Backup</div><div class="bkd">Complete JSON snapshot</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">💾 Database Status</span><span style="font-size:11px;color:var(--muted)">Data persists across reloads and logouts using IndexedDB</span></div>
+          <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div class="sc"><div class="slb">Saved Orders</div><div class="sv sa" id="bk-ord-cnt">—</div></div>
+            <div class="sc"><div class="slb">Saved Returns</div><div class="sv" id="bk-ret-cnt">—</div></div>
+            <div class="sc"><div class="slb">Saved Deliveries</div><div class="sv" id="bk-del-cnt">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ▓▓ EXPIRATION TRACKING ▓▓ -->
+      <div class="section" id="sec-expiration">
+        <div class="sg">
+          <div class="sc"><div class="slb">Expiring Soon</div><div class="sv" style="color:var(--short-text)" id="exp-soon">0</div><div class="ssb">Within 7 days</div></div>
+          <div class="sc"><div class="slb">Expired</div><div class="sv" style="color:var(--oos-text)" id="exp-expired">0</div><div class="ssb">Already expired</div></div>
+          <div class="sc"><div class="slb">Tracked Items</div><div class="sv sa" id="exp-tracked">0</div><div class="ssb">With expiry dates set</div></div>
+          <div class="sc"><div class="slb">Alert Threshold</div><div class="sv" style="color:var(--amber)">7 days</div><div class="ssb">Flag before expiry</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Product Expiration Status</span><span style="font-size:11px;color:var(--muted)">Track expiry dates for traceability & compliance</span></div>
+          <div class="tb2">
+            <div class="sw"><span class="si">🔍</span><input placeholder="Search item…" oninput="filt(this,'tbl-exp')"></div>
+            <select onchange="filtCol(this,'tbl-exp',7)">
+              <option value="">All statuses</option>
+              <option>Expired</option><option>Expiring Soon</option><option>Good</option><option>No Date Set</option>
+            </select>
+          </div>
+          <div class="tw"><table id="tbl-exp">
+            <thead><tr><th>Item Code</th><th>Description</th><th>Stock</th><th>Last Cost</th><th>Freezer</th><th>Expiry Date</th><th>Days Left</th><th>Status</th><th>Set Date</th></tr></thead>
+            <tbody id="exp-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ FREEZER 1 ▓▓ -->
+      <div class="section" id="sec-freezer1">
+        <div class="sg">
+          <div class="sc"><div class="slb">Total SKUs</div><div class="sv sa" id="freezer1-skus">0</div><div class="ssb">Products in Freezer 1</div></div>
+          <div class="sc"><div class="slb">Total Qty</div><div class="sv" id="freezer1-items">0</div><div class="ssb">Item quantity assigned to Freezer 1</div></div>
+          <div class="sc"><div class="slb">Temperature</div><div class="sv"><input class="ti" id="freezer1-temp" type="number" value="-18" style="width:70px" oninput="updateTempDisplay('freezer1', this.value)" onchange="setFreezerTemp('Freezer 1', this.value)">°C <span id="freezer1-current" style="margin-left:5px;color:var(--good-text)">-18°C</span></div><div class="ssb">Manual freezer setpoint</div></div>
+          <div class="sc"><div class="slb">Last Updated</div><div class="sv" id="freezer1-last">Never</div><div class="ssb">Temperature change timestamp</div></div>
+          <div class="sc"><div class="slb">Alerts</div><div class="sv" id="freezer1-alerts" style="color:var(--oos-text)">0</div><div class="ssb">Items low in stock</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Freezer 1 Inventory</span></div>
+          <div class="tb2">
+            <div class="sw"><span class="si">🔍</span><input placeholder="Search item…" oninput="filt(this,'tbl-freezer1')"></div>
+          </div>
+          <div class="tw">
+            <table id="tbl-freezer1">
+              <thead>
+                <tr><th>SKU</th><th>Product</th><th>Stock</th><th>Status</th><th>Last Updated</th></tr>
+              </thead>
+              <tbody id="freezer1-body">
+                <!-- Inventory rows will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ▓▓ FREEZER 2 ▓▓ -->
+      <div class="section" id="sec-freezer2">
+        <div class="sg">
+          <div class="sc"><div class="slb">Total SKUs</div><div class="sv sa" id="freezer2-skus">0</div><div class="ssb">Products in Freezer 2</div></div>
+          <div class="sc"><div class="slb">Total Qty</div><div class="sv" id="freezer2-items">0</div><div class="ssb">Item quantity assigned to Freezer 2</div></div>
+          <div class="sc"><div class="slb">Temperature</div><div class="sv"><input class="ti" id="freezer2-temp" type="number" value="-20" style="width:70px" oninput="updateTempDisplay('freezer2', this.value)" onchange="setFreezerTemp('Freezer 2', this.value)">°C <span id="freezer2-current" style="margin-left:5px;color:var(--good-text)">-20°C</span></div><div class="ssb">Manual freezer setpoint</div></div>
+          <div class="sc"><div class="slb">Last Updated</div><div class="sv" id="freezer2-last">Never</div><div class="ssb">Temperature change timestamp</div></div>
+          <div class="sc"><div class="slb">Alerts</div><div class="sv" id="freezer2-alerts" style="color:var(--avg-text)">0</div><div class="ssb">Items low in stock</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Freezer 2 Inventory</span></div>
+          <div class="tb2">
+            <div class="sw"><span class="si">🔍</span><input placeholder="Search item…" oninput="filt(this,'tbl-freezer2')"></div>
+          </div>
+          <div class="tw">
+            <table id="tbl-freezer2">
+              <thead>
+                <tr><th>SKU</th><th>Product</th><th>Stock</th><th>Status</th><th>Last Updated</th></tr>
+              </thead>
+              <tbody id="freezer2-body">
+                <!-- Inventory rows will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ▓▓ FREEZER 3 ▓▓ -->
+      <div class="section" id="sec-freezer3">
+        <div class="sg">
+          <div class="sc"><div class="slb">Total SKUs</div><div class="sv sa" id="freezer3-skus">0</div><div class="ssb">Products in Freezer 3</div></div>
+          <div class="sc"><div class="slb">Total Qty</div><div class="sv" id="freezer3-items">0</div><div class="ssb">Item quantity assigned to Freezer 3</div></div>
+          <div class="sc"><div class="slb">Temperature</div><div class="sv"><input class="ti" id="freezer3-temp" type="number" value="-15" style="width:70px" oninput="updateTempDisplay('freezer3', this.value)" onchange="setFreezerTemp('Freezer 3', this.value)">°C <span id="freezer3-current" style="margin-left:5px;color:var(--good-text)">-15°C</span></div><div class="ssb">Manual freezer setpoint</div></div>
+          <div class="sc"><div class="slb">Last Updated</div><div class="sv" id="freezer3-last">Never</div><div class="ssb">Temperature change timestamp</div></div>
+          <div class="sc"><div class="slb">Alerts</div><div class="sv" id="freezer3-alerts" style="color:var(--short-text)">0</div><div class="ssb">Items low in stock</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Freezer 3 Inventory</span></div>
+          <div class="tb2">
+            <div class="sw"><span class="si">🔍</span><input placeholder="Search item…" oninput="filt(this,'tbl-freezer3')"></div>
+          </div>
+          <div class="tw">
+            <table id="tbl-freezer3">
+              <thead>
+                <tr><th>SKU</th><th>Product</th><th>Stock</th><th>Status</th><th>Last Updated</th></tr>
+              </thead>
+              <tbody id="freezer3-body">
+                <!-- Inventory rows will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EDIT ORDER MODAL -->
+<div class="mbg" id="emodal">
+  <div class="modal" style="width:540px">
+    <div class="mh"><span style="font-size:13px;font-weight:500">Edit Order</span><button class="mhc" onclick="closeM()">&#10005;</button></div>
+    <div class="mb" style="padding:12px 16px">
+      <!-- Line items (read-only) -->
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px">Items (read-only after submit)</div>
+      <div id="em-lines" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 10px;margin-bottom:12px;max-height:160px;overflow-y:auto"></div>
+      <!-- Order details -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="fg"><label>Order Date</label><input type="date" id="emd"></div>
+        <div class="fg"><label>Supplier Ref / PO#</label><input type="text" id="emr" placeholder="PO number"></div>
+        <div class="fg" style="grid-column:span 2"><label>Notes</label><input type="text" id="emn" placeholder="Special instructions&hellip;"></div>
+      </div>
+      <!-- Customer details -->
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--amber);margin-bottom:6px">&#128100; Customer</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg"><label>Customer Name</label><input type="text" id="em-cname"></div>
+        <div class="fg"><label>Contact No.</label><input type="text" id="em-cphone"></div>
+        <div class="fg"><label>Address / Area</label><input type="text" id="em-caddr"></div>
+        <div class="fg"><label>Customer Type</label>
+          <select id="em-ctype">
+            <option value="">Select type&hellip;</option>
+            <option>Retailer</option><option>Wholesaler</option><option>Distributor</option>
+            <option>Walk-in</option><option>Online</option><option>Regular</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="mac"><button class="btn bg3" onclick="closeM()">Cancel</button><button class="btn bp3" onclick="saveEdit()">Save Changes</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══ AUTH ══════════════════════════════════════════════
+function h32(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*0x01000193)>>>0;}return h.toString(16);}
+// Credentials stored as hashed values — plain text not exposed in source
+const U={[h32('admin')]:{r:'Administrator',d:'Admin'},[h32('manager')]:{r:'Warehouse Manager',d:'Manager'},[h32('staff')]:{r:'Staff',d:'Staff'}};
+const P={[h32('admin')]:h32('yb@2026'),[h32('manager')]:h32('hq@2026'),[h32('staff')]:h32('hq@2026')};
+let CU=null;
+function doLogin(){
+  const u=document.getElementById('liu').value.trim();
+  const p=document.getElementById('lip').value;
+  const hu=h32(u),hp=h32(p);
+  if(U[hu]&&P[hu]===hp){
+    CU={u,...U[hu]};
+    document.getElementById('ls').style.display='none';
+    document.getElementById('app').classList.add('v');
+    document.getElementById('sfu').textContent=`${U[hu].d} (${u})`;
+    document.getElementById('sfr').textContent=U[hu].r;
+    log('auth',`User "${u}" signed in`);
+    init();
+  } else {
+    document.getElementById('lerr').style.display='block';
+    document.getElementById('lip').value='';
+  }
+}
+async function doLogout(){
+  // Ensure all data is saved before logout
+  if(autoSaveInterval)clearInterval(autoSaveInterval);
+  await saveData();
+  log('auth',`User "${CU?.u}" signed out`);
+  CU=null;
+  document.getElementById('app').classList.remove('v');
+  document.getElementById('ls').style.display='flex';
+  document.getElementById('liu').value='';document.getElementById('lip').value='';
+  document.getElementById('lerr').style.display='none';
+}
+
+// ══ DATA ══════════════════════════════════════════════
+let INV=[
+  {code:"BEEFTAPA250",desc:"BEEF TAPA 250GX40",conv:40,endC:0,endP:0,begC:null,begP:null,lc:3046.07,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"BEEFTAPA500",desc:"BEEF TAPA 500GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:3046.07,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"BFASTSAUSG500",desc:"BREAKFAST SAUSAGE 500GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:3456.12,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"CHICBOLOG220",desc:"CHICKEN BOLOGNA 220GX20",conv:20,endC:1,endP:5,begC:1,begP:5,lc:722.47,valC:722.47,valP:180.6175,tv:903.09,cond:"Average",rs:"Pending"},
+  {code:"CHICTCNOBTS220",desc:"CHICKEN TOCINO BITES 220GX40",conv:40,endC:0,endP:0,begC:null,begP:null,lc:1942.42,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"CHICTCNOBTS450",desc:"CHICKEN TOCINO BITES 450GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:1905.07,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"EMBOQUITO200",desc:"EMBOTIDO POQUITO 200GX20",conv:20,endC:1,endP:7,begC:1,begP:7,lc:722.47,valC:722.47,valP:252.8645,tv:975.33,cond:"Average",rs:"Pending"},
+  {code:"FRANKJAPSAUS225",desc:"FRANK JAPANESE SAUSAGE 225GX40",conv:40,endC:0,endP:0,begC:null,begP:null,lc:1718.3,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"GARLONG220",desc:"GARLIC LONGGANISA 220GX20",conv:20,endC:0,endP:1,begC:null,begP:1,lc:947.02,valC:0,valP:47.351,tv:47.35,cond:"Short on Stock",rs:"Pending"},
+  {code:"GARPORKLONG450",desc:"GARLIC PORK LONGGANISA 450GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:1972.14,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"HOOHOTDG1KG",desc:"HOORAY REG HOTDOG 1KGX10",conv:10,endC:0,endP:0,begC:null,begP:null,lc:1415.64,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"HOOHOTDG250",desc:"HOORAY REGULAR HOTDOG 250GX20",conv:20,endC:4,endP:4,begC:4,begP:4,lc:741.99,valC:2967.96,valP:148.398,tv:3116.36,cond:"Good",rs:"Pending"},
+  {code:"HOOHOTDG500",desc:"HOORAY REGULAR HOTDOG 500GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:1464.46,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"HUNGSAUSG200",desc:"HUNGARIAN SAUSAGE 200GX20",conv:20,endC:0,endP:16,begC:null,begP:16,lc:764.06,valC:0,valP:611.248,tv:611.25,cond:"Short on Stock",rs:"Pending"},
+  {code:"HUNGSAUSG500",desc:"HUNGARIAN SAUSAGE 500GX10",conv:10,endC:0,endP:0,begC:null,begP:null,lc:967.86,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"HUNGSAUSCH500",desc:"HUNGARIAN SAUSAGE W/CHEESE 500GX10",conv:10,endC:0,endP:0,begC:null,begP:null,lc:984.79,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"HUNGSAUSCH200",desc:"HUNGARIAN SAUSAGEW/CHEESE 200GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:798.02,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"KIELSAUSG500",desc:"KIELBASA SAUSAGE 500GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:3260.86,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"LUNCHHAM250",desc:"LUNCHEON HAM 250GX20",conv:20,endC:1,endP:1,begC:1,begP:1,lc:995.83,valC:995.83,valP:49.7915,tv:1045.62,cond:"Average",rs:"Pending"},
+  {code:"LUNCHMEAT250",desc:"LUNCHEON MEAT 250GX20",conv:20,endC:4,endP:14,begC:4,begP:14,lc:878.67,valC:3514.68,valP:615.069,tv:4129.75,cond:"Good",rs:"Pending"},
+  {code:"PORKBBQSKE480",desc:"PORK BBQ SKEWERS 480GX10",conv:10,endC:0,endP:0,begC:null,begP:null,lc:1214.01,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"PORKBELLY500",desc:"PORK BELLY 500GX10",conv:10,endC:0,endP:0,begC:null,begP:null,lc:1358.34,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"PORKTCN220",desc:"PORK TOCINO 220GX20",conv:20,endC:3,endP:18,begC:3,begP:18,lc:971.21,valC:2913.63,valP:874.089,tv:3787.72,cond:"Good",rs:"Pending"},
+  {code:"PORKTCNO450",desc:"PORK TOCINO 450GX10",conv:10,endC:3,endP:0,begC:3,begP:null,lc:971.21,valC:2913.63,valP:0,tv:2913.63,cond:"Average",rs:"Pending"},
+  {code:"PRESKINLONG200",desc:"PREMIUM SKINLESS LONGGANISA 200GX40",conv:40,endC:0,endP:0,begC:null,begP:null,lc:1776.88,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"PRESKINLONG220",desc:"PREMIUM SKINLESS LONGGANISA 220GX20",conv:20,endC:1,endP:8,begC:1,begP:8,lc:888.44,valC:888.44,valP:355.376,tv:1243.82,cond:"Average",rs:"Pending"},
+  {code:"PRESKINLONG450",desc:"PREMIUM SKINLESS LONGGANISA 450GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:1776.88,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"PRESLIHAM250G",desc:"PREMIUM SLICED HAM 250GX40",conv:40,endC:0,endP:0,begC:null,begP:null,lc:2421.24,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"REGBACNROLL250",desc:"REG BACON ROLL 250GX40",conv:40,endC:0,endP:0,begC:null,begP:null,lc:3241.33,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"REGSKIPKLONG200",desc:"REG.SKINLESS PORK LONGGANISA 200X20",conv:20,endC:1,endP:8,begC:1,begP:8,lc:693.18,valC:693.18,valP:277.272,tv:970.45,cond:"Average",rs:"Pending"},
+  {code:"SISIGCAPANG200",desc:"SISIG CAPANGPANGAN 200GX20",conv:20,endC:3,endP:1,begC:3,begP:1,lc:888.44,valC:2665.32,valP:44.422,tv:2709.74,cond:"Good",rs:"Pending"},
+  {code:"SMOCKNLONG200",desc:"SMOKED CHICKEN LONGGANISA 200GX40",conv:40,endC:0,endP:0,begC:null,begP:null,lc:1464.46,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"SMOPRKLONG200",desc:"SMOKED PORK LONGGANISA 200GX20",conv:20,endC:1,endP:8,begC:1,begP:8,lc:693.18,valC:693.18,valP:277.272,tv:970.45,cond:"Average",rs:"Pending"},
+  {code:"SMOPRKLONG450",desc:"SMOKED PORK LONGGANISA 450GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:1366.83,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"SWEETHAMSLI250",desc:"SWEET HAM SLICED 250GX40",conv:40,endC:0,endP:0,begC:null,begP:null,lc:2030.71,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"SWETPORKLONG250",desc:"SWEET PORK LONGGANISA 220GX20",conv:20,endC:0,endP:18,begC:null,begP:18,lc:898.2,valC:0,valP:808.38,tv:808.38,cond:"Short on Stock",rs:"Pending"},
+  {code:"SWETPORKLONG450",desc:"SWEET PORK LONGGANISA450GX20",conv:20,endC:0,endP:0,begC:null,begP:null,lc:1796.4,valC:0,valP:0,tv:0,cond:"Out of Stock",rs:"Pending"},
+  {code:"YUMMTCNO",desc:"YUMMYLICIOUS PORK TOCINO 200GX20",conv:20,endC:4,endP:16,begC:4,begP:16,lc:849.81,valC:3399.24,valP:679.848,tv:4079.09,cond:"Good",rs:"Pending"},
+];
+let SD=[
+  {code:"BEEFTAPA250",desc:"BEEF TAPA 250GX40",conv:40,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:3046.07},
+  {code:"BEEFTAPA500",desc:"BEEF TAPA 500GX20",conv:20,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:3046.07},
+  {code:"BFASTSAUSG500",desc:"BREAKFAST SAUSAGE 500GX20",conv:20,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:3456.12},
+  {code:"CHICBOLOG220",desc:"CHICKEN BOLOGNA 220GX20",conv:20,begC:2,cp:40,endC:1,endP:5,sp:0,tsC:0,tsP:541.8525,ts:541.8525,pp:722.47},
+  {code:"CHICTCNOBTS220",desc:"CHICKEN TOCINO BITES 220GX40",conv:40,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1942.42},
+  {code:"CHICTCNOBTS450",desc:"CHICKEN TOCINO BITES 450GX20",conv:20,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1905.07},
+  {code:"EMBOQUITO200",desc:"EMBOTIDO POQUITO 200GX20",conv:20,begC:2,cp:40,endC:1,endP:7,sp:0,tsC:0,tsP:469.6055,ts:469.6055,pp:722.47},
+  {code:"FRANKJAPSAUS225",desc:"FRANK JAPANESE SAUSAGE 225GX40",conv:40,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1718.3},
+  {code:"GARLONG220",desc:"GARLIC LONGGANISA 220GX20",conv:20,begC:2,cp:40,endC:0,endP:1,sp:1,tsC:947.02,tsP:899.669,ts:1846.689,pp:947.02},
+  {code:"GARPORKLONG450",desc:"GARLIC PORK LONGGANISA 450GX20",conv:20,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1972.14},
+  {code:"HOOHOTDG1KG",desc:"HOORAY REG HOTDOG 1KGX10",conv:10,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1415.64},
+  {code:"HOOHOTDG250",desc:"HOORAY REGULAR HOTDOG 250GX20",conv:20,begC:6,cp:120,endC:4,endP:4,sp:1,tsC:741.99,tsP:593.592,ts:1335.582,pp:741.99},
+  {code:"HOOHOTDG500",desc:"HOORAY REGULAR HOTDOG 500GX20",conv:20,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1464.46},
+  {code:"HUNGSAUSG200",desc:"HUNGARIAN SAUSAGE 200GX20",conv:20,begC:2,cp:40,endC:0,endP:16,sp:1,tsC:764.06,tsP:152.812,ts:916.872,pp:764.06},
+  {code:"HUNGSAUSG500",desc:"HUNGARIAN SAUSAGE 500GX10",conv:10,begC:2,cp:20,endC:0,endP:0,sp:2,tsC:1935.72,tsP:0,ts:1935.72,pp:967.86},
+  {code:"HUNGSAUSCH500",desc:"HUNGARIAN SAUSAGE W/CHEESE 500GX10",conv:10,begC:2,cp:20,endC:0,endP:0,sp:2,tsC:1969.58,tsP:0,ts:1969.58,pp:984.79},
+  {code:"HUNGSAUSCH200",desc:"HUNGARIAN SAUSAGEW/CHEESE 200GX20",conv:20,begC:2,cp:40,endC:0,endP:0,sp:2,tsC:1596.04,tsP:0,ts:1596.04,pp:798.02},
+  {code:"KIELSAUSG500",desc:"KIELBASA SAUSAGE 500GX20",conv:20,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:3260.86},
+  {code:"LUNCHHAM250",desc:"LUNCHEON HAM 250GX20",conv:20,begC:2,cp:40,endC:1,endP:1,sp:0,tsC:0,tsP:946.0385,ts:946.0385,pp:995.83},
+  {code:"LUNCHMEAT250",desc:"LUNCHEON MEAT 250GX20",conv:20,begC:6,cp:120,endC:4,endP:14,sp:1,tsC:878.67,tsP:263.601,ts:1142.271,pp:878.67},
+  {code:"PORKBBQSKE480",desc:"PORK BBQ SKEWERS 480GX10",conv:10,begC:1,cp:10,endC:0,endP:0,sp:1,tsC:1214.01,tsP:0,ts:1214.01,pp:1214.01},
+  {code:"PORKBELLY500",desc:"PORK BELLY 500GX10",conv:10,begC:1,cp:10,endC:0,endP:0,sp:1,tsC:1358.34,tsP:0,ts:1358.34,pp:1358.34},
+  {code:"PORKTCN220",desc:"PORK TOCINO 220GX20",conv:20,begC:6,cp:120,endC:3,endP:18,sp:2,tsC:1942.42,tsP:97.121,ts:2039.541,pp:971.21},
+  {code:"PORKTCNO450",desc:"PORK TOCINO 450GX10",conv:10,begC:6,cp:60,endC:3,endP:0,sp:3,tsC:2913.63,tsP:0,ts:2913.63,pp:971.21},
+  {code:"PRESKINLONG200",desc:"PREMIUM SKINLESS LONGGANISA 200GX40",conv:40,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1776.88},
+  {code:"PRESKINLONG220",desc:"PREMIUM SKINLESS LONGGANISA 220GX20",conv:20,begC:2,cp:40,endC:1,endP:8,sp:0,tsC:0,tsP:533.064,ts:533.064,pp:888.44},
+  {code:"PRESKINLONG450",desc:"PREMIUM SKINLESS LONGGANISA 450GX20",conv:20,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1776.88},
+  {code:"PRESLIHAM250G",desc:"PREMIUM SLICED HAM 250GX40",conv:40,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:2421.24},
+  {code:"REGBACNROLL250",desc:"REG BACON ROLL 250GX40",conv:40,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:3241.33},
+  {code:"REGSKIPKLONG200",desc:"REG.SKINLESS PORK LONGGANISA 200X20",conv:20,begC:2,cp:40,endC:1,endP:8,sp:0,tsC:0,tsP:415.908,ts:415.908,pp:693.18},
+  {code:"SISIGCAPANG200",desc:"SISIG CAPANGPANGAN 200GX20",conv:20,begC:6,cp:120,endC:3,endP:1,sp:2,tsC:1776.88,tsP:844.018,ts:2620.898,pp:888.44},
+  {code:"SMOCKNLONG200",desc:"SMOKED CHICKEN LONGGANISA 200GX40",conv:40,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1464.46},
+  {code:"SMOPRKLONG200",desc:"SMOKED PORK LONGGANISA 200GX20",conv:20,begC:2,cp:40,endC:1,endP:8,sp:0,tsC:0,tsP:415.908,ts:415.908,pp:693.18},
+  {code:"SMOPRKLONG450",desc:"SMOKED PORK LONGGANISA 450GX20",conv:20,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1366.83},
+  {code:"SWEETHAMSLI250",desc:"SWEET HAM SLICED 250GX40",conv:40,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:2030.71},
+  {code:"SWETPORKLONG250",desc:"SWEET PORK LONGGANISA 220GX20",conv:20,begC:2,cp:40,endC:0,endP:18,sp:1,tsC:898.2,tsP:89.82,ts:988.02,pp:898.2},
+  {code:"SWETPORKLONG450",desc:"SWEET PORK LONGGANISA450GX20",conv:20,begC:null,cp:0,endC:0,endP:0,sp:0,tsC:0,tsP:0,ts:0,pp:1796.4},
+  {code:"YUMMTCNO",desc:"YUMMYLICIOUS PORK TOCINO 200GX20",conv:20,begC:6,cp:120,endC:4,endP:16,sp:1,tsC:849.81,tsP:169.962,ts:1019.772,pp:849.81},
+];
+let orders=[],returns=[],deliveries=[],dailySales=[],auditLog=[],editIdx=null;
+const DEFAULT_FREEZER_SETTINGS={
+  'Freezer 1':{temp:-18, lastUpdated:'Never'},
+  'Freezer 2':{temp:-20, lastUpdated:'Never'},
+  'Freezer 3':{temp:-15, lastUpdated:'Never'}
+};
+let freezerSettings={...DEFAULT_FREEZER_SETTINGS};
+
+// ══ HELPERS ═══════════════════════════════════════════
+function p(n){return n&&n>0?'₱'+Number(n).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';}
+function nn(n){return n!=null&&!isNaN(n)?n:'—';}
+function bCond(c){const m={'Good':'<span class="badge bg2">Good</span>','Average':'<span class="badge ba2">Average</span>','Short on Stock':'<span class="badge bs2">Short on Stock</span>','Out of Stock':'<span class="badge bo2">Out of Stock</span>'};return m[c]||`<span class="badge bo2">${c}</span>`;}
+const WAREHOUSES=['Unassigned','Freezer 1','Freezer 2','Freezer 3'];
+function storageSelectHtml(i,current){
+  const value=current||'Unassigned';
+  return `<select onchange="setStorage(${i},this.value)">${WAREHOUSES.map(w=>`<option value="${w}"${w===value?' selected':''}>${w}</option>`).join('')}</select>`;
+}
+async function setStorage(i,value){
+  INV[i].storage=value;
+  await saveData();
+  rInv();rFreezer1();rFreezer2();rFreezer3();
+  updateFreezerStats();
+  toast(`✓ ${INV[i].code} assigned to ${value}.`);
+}
+function ensureStorage(){
+  INV.forEach(item=>{if(!item.storage)item.storage='Unassigned';});
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',2800);}
+function popSel(id){const el=document.getElementById(id);el.innerHTML='<option value="">Select item\u2026</option>'+INV.map(d=>`<option value="${d.code}">${d.code} \u2014 ${d.desc}</option>`).join('');}
+function updInvStats(){
+  const tv=INV.reduce((s,d)=>s+d.tv,0),vc=INV.reduce((s,d)=>s+d.valC,0),vp=INV.reduce((s,d)=>s+d.valP,0),ac=INV.filter(d=>d.tv>0).length;
+  document.getElementById('ivt').textContent=p(tv);document.getElementById('ivc').textContent=p(vc);document.getElementById('ivp').textContent=p(vp);document.getElementById('iva').textContent=ac;
+}
+
+// ══ RECEIVING ═════════════════════════════════════════
+function rRec(){
+  const pend=INV.filter(d=>d.rs==='Pending').length,appr=INV.filter(d=>d.rs==='Approved').length;
+  document.getElementById('rp').textContent=pend;document.getElementById('ra').textContent=appr;
+  document.getElementById('rec-body').innerHTML=INV.map((d,i)=>`<tr>
+    <td><code>${d.code}</code></td><td style="max-width:175px;font-size:11.5px">${d.desc}</td>
+    <td class="tm">${d.conv}</td><td>${nn(d.endC)}</td><td>${nn(d.endP)}</td>
+    <td><input class="ti" type="number" min="0" value="${d.rcvC||''}" placeholder="0" oninput="setRcv(${i},'rcvC',this.value)"></td>
+    <td><input class="ti" type="number" min="0" value="${d.rcvP||''}" placeholder="0" oninput="setRcv(${i},'rcvP',this.value)"></td>
+    <td>${nn(d.begC)}</td><td>${nn(d.begP)}</td>
+    <td>${(d.endC||0)*d.conv+(d.endP||0)}</td>
+    <td><input type="date" style="padding:5px 7px;font-size:11px;width:115px" value="${d.rcvBestBefore||''}" oninput="setRcv(${i},'rcvBestBefore',this.value)"></td>
+    <td>${bCond(d.cond)}</td>
+    <td>${d.rs==='Approved'?'<span class="badge bg2">Approved</span>':'<span class="badge ba2">Pending</span>'}</td>
+    <td><button class="btn bok bsm" onclick="appRec(${i})">${d.rs==='Approved'?'➕ Add More':'✔ Approve'}</button></td>
+  </tr>`).join('');
+}
+async function setRcv(i, field, val){
+  INV[i][field]=parseInt(val)||0;
+  await saveData();
+}
+function applyReceiving(item){
+  const addC=item.rcvC||0;
+  const addP=item.rcvP||0;
+  if(!addC && !addP) return {addC:0, addP:0};
+  const existingTotal=(item.endC||0)*item.conv+(item.endP||0);
+  const incomingTotal=addC*item.conv+addP;
+  const total=existingTotal+incomingTotal;
+  item.endC=Math.floor(total/item.conv);
+  item.endP=total % item.conv;
+  item.valC=parseFloat((item.endC*item.lc).toFixed(2));
+  item.valP=parseFloat((item.endP*(item.lc/item.conv)).toFixed(2));
+  item.tv=parseFloat((item.valC+item.valP).toFixed(2));
+  const tot=item.endC*item.conv+(item.endP||0);
+  item.cond=tot===0?'Out of Stock':tot<item.conv/2?'Short on Stock':tot>=item.conv?'Good':'Average';
+  item.rcvC=0;
+  item.rcvP=0;
+  return {addC, addP};
+}
+async function appRec(i){
+  const item=INV[i];
+  const received=applyReceiving(item);
+  item.rs='Approved';
+  if(item.rcvBestBefore) item.expiryDate=item.rcvBestBefore;
+  log('receiving',`Receiving approved: ${item.code} — ${received.addC} rcv cases, ${received.addP} rcv pcs; best before: ${item.rcvBestBefore||'not set'}; inventory now ${item.endC||0}C ${item.endP||0}P (${item.cond}) — by ${CU?.u}`);
+  rRec();rInv();rSales();rExpiration();await saveData();toast(`✓ ${item.code} approved and inventory updated.`);
+}
+async function approveAll(){
+  const pend=INV.filter(d=>d.rs==='Pending');if(!pend.length){toast('All items already approved.');return;}
+  pend.forEach(item=>{applyReceiving(item);item.rs='Approved';}); 
+  log('receiving',`Bulk approve: all ${pend.length} items approved by ${CU?.u}`);
+  rRec();rInv();rSales();rExpiration();await saveData();toast(`✓ All ${pend.length} items approved and inventory updated.`);
+}
+
+// ══ INVENTORY ═════════════════════════════════════════
+function rInv(){
+  document.getElementById('inv-body').innerHTML=INV.map((d,i)=>`<tr>
+    <td><code>${d.code}</code></td><td style="max-width:175px;font-size:11.5px">${d.desc}</td>
+    <td class="tm">${d.conv}</td><td>${nn(d.endC)}</td><td>${nn(d.endP)}</td>
+    <td class="tm">${p(d.lc)}</td>
+    <td>${d.valC?p(d.valC):'<span class="tm">—</span>'}</td>
+    <td>${d.valP?p(d.valP):'<span class="tm">—</span>'}</td>
+    <td>${d.tv?`<strong class="ta">${p(d.tv)}</strong>`:'<span class="tm">—</span>'}</td>
+    <td>${storageSelectHtml(i,d.storage)}</td>
+    <td>${bCond(d.cond)}</td>
+  </tr>`).join('');
+  updInvStats();
+  rInvOverview();
+  refreshSkuSelects();
+  updateFreezerStats();
+}
+function rInvOverview(){
+  const cc={Good:0,Average:0,'Short on Stock':0,'Out of Stock':0};
+  INV.forEach(d=>{cc[d.cond]=(cc[d.cond]||0)+1;});
+  document.getElementById('qov-good').textContent=cc['Good'];
+  document.getElementById('qov-avg').textContent=cc['Average'];
+  document.getElementById('qov-short').textContent=cc['Short on Stock'];
+  document.getElementById('qov-oos').textContent=cc['Out of Stock'];
+  const panel=document.getElementById('inv-notifs');
+  const oos=INV.filter(d=>d.cond==='Out of Stock');
+  const short=INV.filter(d=>d.cond==='Short on Stock');
+  const avg=INV.filter(d=>d.cond==='Average');
+  let html='';
+  if(oos.length) html+=`<div class="notif-item notif-oos"><span style="font-size:15px">&#128308;</span><div><strong>${oos.length} SKU${oos.length>1?'s':''} Out of Stock</strong> — cannot be ordered until restocked: ${oos.slice(0,5).map(d=>`<code style="font-size:10.5px;color:var(--oos-text)">${d.code}</code>`).join(', ')}${oos.length>5?` +${oos.length-5} more`:''}</div></div>`;
+  if(short.length) html+=`<div class="notif-item notif-short"><span style="font-size:15px">&#9888;&#65039;</span><div><strong>${short.length} SKU${short.length>1?'s':''} Short on Stock</strong> — consider reordering soon: ${short.map(d=>`<code style="font-size:10.5px;color:var(--short-text)">${d.code}</code>`).join(', ')}</div></div>`;
+  if(avg.length) html+=`<div class="notif-item notif-avg"><span style="font-size:15px">&#128993;</span><div><strong>${avg.length} SKU${avg.length>1?'s':''} at Average level</strong> — monitor closely: ${avg.map(d=>`<code style="font-size:10.5px;color:var(--avg-text)">${d.code}</code>`).join(', ')}</div></div>`;
+  if(!html) html='<div style="font-size:12px;color:var(--good-text);padding:4px 0">&#9989; All stock levels are healthy.</div>';
+  panel.innerHTML=html;
+}
+function refreshSkuSelects(){
+  const html=orderLineSkuHtml();
+  document.querySelectorAll('#order-li-body select, #del-li-body select').forEach(sel=>{
+    const current=sel.value;
+    sel.innerHTML=html;
+    sel.value=current;
+  });
+  popSel('reti');
+}
+
+// ══ EXPIRATION TRACKING ═════════════════════════════════
+function daysUntilExpiry(expiryDate){
+  if(!expiryDate)return null;
+  const today=new Date();
+  const expiry=new Date(expiryDate);
+  const diff=expiry-today;
+  return Math.ceil(diff/(1000*60*60*24));
+}
+
+function getExpiryStatus(expiryDate){
+  if(!expiryDate)return 'No Date Set';
+  const days=daysUntilExpiry(expiryDate);
+  if(days<0)return 'Expired';
+  if(days<=7)return 'Expiring Soon';
+  return 'Good';
+}
+
+async function setExpiryDate(i,dateStr){
+  INV[i].expiryDate=dateStr||null;
+  await saveData();
+  rExpiration();
+  rInv();
+  toast(`✓ ${INV[i].code} expiry date ${dateStr?'set to '+dateStr:'cleared'}.`);
+}
+
+function rExpiration(){
+  const tracked=INV.filter(d=>d.expiryDate).length;
+  const expired=INV.filter(d=>d.expiryDate&&daysUntilExpiry(d.expiryDate)<0).length;
+  const expiringSoon=INV.filter(d=>d.expiryDate&&daysUntilExpiry(d.expiryDate)>=0&&daysUntilExpiry(d.expiryDate)<=7).length;
+  document.getElementById('exp-tracked').textContent=tracked;
+  document.getElementById('exp-expired').textContent=expired;
+  document.getElementById('exp-soon').textContent=expiringSoon;
+  document.getElementById('exp-body').innerHTML=INV.map((d,i)=>{
+    const status=getExpiryStatus(d.expiryDate);
+    const days=daysUntilExpiry(d.expiryDate);
+    const statusBadge=status==='Expired'?'<span class="badge bo2">Expired</span>':status==='Expiring Soon'?'<span class="badge bs2">Expiring Soon</span>':status==='Good'?'<span class="badge bg2">Good</span>':'<span class="badge" style="background:var(--dim);color:var(--muted)">No Date</span>';
+    return `<tr>
+      <td><code>${d.code}</code></td><td style="max-width:175px;font-size:11.5px">${d.desc}</td>
+      <td>${nn(d.endC)}C ${nn(d.endP)}P</td><td class="tm">${p(d.lc)}</td>
+      <td>${d.storage||'Unassigned'}</td>
+      <td>${d.expiryDate||'—'}</td>
+      <td>${days!==null?(days<0?'<strong style="color:var(--oos-text)">'+days+' days</strong>':'<strong style="color:'+(days<=7?'var(--short-text)':'var(--good-text)')+'\">'+days+' days</strong>'):'—'}</td>
+      <td>${statusBadge}</td>
+      <td><input type="date" value="${d.expiryDate||''}" style="padding:5px 7px;font-size:11px;width:120px" onchange="setExpiryDate(${i},this.value)"></td>
+    </tr>`;
+  }).join('');
+}
+
+function getFreezerData(freezer){
+  const items=INV.filter(d=>d.storage===freezer);
+  const skuCount=items.length;
+  const quantity=items.reduce((sum,d)=>sum+((d.endC||0)*d.conv+(d.endP||0)),0);
+  const alerts=items.filter(d=>d.cond==='Short on Stock'||d.cond==='Out of Stock').length;
+  return {skuCount,quantity,alerts};
+}
+
+function updateFreezerStats(){
+  ['Freezer 1','Freezer 2','Freezer 3'].forEach((freezer,index)=>{
+    const num=index+1;
+    const {skuCount,quantity,alerts}=getFreezerData(freezer);
+    const tempInput=document.getElementById(`freezer${num}-temp`);
+    document.getElementById(`freezer${num}-skus`).textContent=skuCount;
+    document.getElementById(`freezer${num}-items`).textContent=quantity;
+    document.getElementById(`freezer${num}-alerts`).textContent=alerts;
+    if(tempInput) tempInput.value = freezerSettings[freezer]?.temp ?? DEFAULT_FREEZER_SETTINGS[freezer].temp;
+    updateTempDisplay(`freezer${num}`, tempInput.value);
+    document.getElementById(`freezer${num}-last`).textContent = freezerSettings[freezer]?.lastUpdated ?? DEFAULT_FREEZER_SETTINGS[freezer].lastUpdated;
+  });
+}
+
+async function setFreezerTemp(freezer,temp){
+  const value=parseInt(temp,10);
+  if(isNaN(value)){
+    toast('Enter a valid temperature');
+    return;
+  }
+  freezerSettings[freezer]={...freezerSettings[freezer],temp:value, lastUpdated:new Date().toLocaleString()};
+  await saveData();
+  updateFreezerStats();
+  toast(`✓ ${freezer} temperature set to ${value}°C.`);
+}
+
+function updateTempDisplay(freezerId, value){
+  const display = document.getElementById(freezerId + '-current');
+  if(display){
+    const numValue = parseInt(value, 10);
+    display.textContent = (isNaN(numValue) ? value : numValue) + '°C';
+  }
+}
+
+function rFreezer1(){
+  document.getElementById('freezer1-body').innerHTML = INV.filter(d=>d.storage==='Freezer 1').map(d => `<tr>
+    <td><code>${d.code}</code></td><td style="max-width:175px;font-size:11.5px">${d.desc}</td>
+    <td>${nn(d.endC)}</td><td>${bCond(d.cond)}</td><td>${p(d.lc)}</td>
+  </tr>`).join('');
+}
+
+function rFreezer2(){
+  document.getElementById('freezer2-body').innerHTML = INV.filter(d=>d.storage==='Freezer 2').map(d => `<tr>
+    <td><code>${d.code}</code></td><td style="max-width:175px;font-size:11.5px">${d.desc}</td>
+    <td>${nn(d.endC)}</td><td>${bCond(d.cond)}</td><td>${p(d.lc)}</td>
+  </tr>`).join('');
+}
+
+function rFreezer3(){
+  document.getElementById('freezer3-body').innerHTML = INV.filter(d=>d.storage==='Freezer 3').map(d => `<tr>
+    <td><code>${d.code}</code></td><td style="max-width:175px;font-size:11.5px">${d.desc}</td>
+    <td>${nn(d.endC)}</td><td>${bCond(d.cond)}</td><td>${p(d.lc)}</td>
+  </tr>`).join('');
+}
+
+// ══ ORDERS PIPELINE — MULTI-LINE ══════════════════════
+const STAGES=['Pending','Confirmed','In Transit','Fulfilled'];
+let orderLines=[];   // [{code,qty,qtyp}]
+
+function buildSkuOption(code){
+  const d=INV.find(x=>x.code===code);
+  const isOOS=d&&d.cond==='Out of Stock';
+  return `<option value="${code}"${isOOS?' data-oos="1"':''}>${code}${isOOS?' \u26d4':''}</option>`;
+}
+function orderLineSkuHtml(){
+  return '<option value="">\u2014 Select SKU \u2014</option>'+INV.map(d=>{
+    const isOOS=d.cond==='Out of Stock';
+    return `<option value="${d.code}"${isOOS?' data-oos="1"':''}>${d.code} \u2014 ${d.desc.substring(0,34)}${isOOS?' \u26d4 OOS':''}`;
+  }).join('');
+}
+function addOrderLine(){
+  const idx=orderLines.length;
+  orderLines.push({code:'',qty:0,qtyp:0});
+  const tr=document.createElement('tr');
+  tr.id=`oli-${idx}`;
+  tr.innerHTML=`<td class="tm" style="font-size:11px;width:24px">${idx+1}</td>
+    <td><select onchange="onOrderLineSku(${idx},this)">${orderLineSkuHtml()}</select></td>
+    <td><input type="number" min="0" placeholder="0" style="width:68px;padding:5px 7px;font-size:12px" oninput="orderLines[${idx}].qty=parseInt(this.value)||0"></td>
+    <td><input type="number" min="0" placeholder="0" style="width:68px;padding:5px 7px;font-size:12px" oninput="orderLines[${idx}].qtyp=parseInt(this.value)||0"></td>
+    <td><button class="li-rm" onclick="removeOrderLine(${idx})" title="Remove">&times;</button></td>`;
+  document.getElementById('order-li-body').appendChild(tr);
+}
+function onOrderLineSku(idx,sel){
+  orderLines[idx].code=sel.value;
+  const opt=sel.options[sel.selectedIndex];
+  const isOOS=opt.dataset.oos==='1';
+  sel.style.borderColor=isOOS?'var(--short-text)':'var(--border)';
+  checkOrderOos();
+}
+function checkOrderOos(){
+  const oosItems=orderLines.filter(l=>l.code&&INV.find(d=>d.code===l.code&&d.cond==='Out of Stock'));
+  const banner=document.getElementById('order-oos-banner');
+  if(oosItems.length){
+    banner.style.display='block';
+    banner.innerHTML=`\u26d4 <strong>${oosItems.length} item${oosItems.length>1?'s':''} are Out of Stock</strong> and will be skipped: ${oosItems.map(l=>`<code style="color:var(--oos-text);font-size:11px">${l.code}</code>`).join(', ')}`;
+  } else {
+    banner.style.display='none';
+  }
+}
+function removeOrderLine(idx){
+  const row=document.getElementById(`oli-${idx}`);
+  if(row)row.remove();
+  orderLines[idx]={code:'',qty:0,qtyp:0,removed:true};
+  checkOrderOos();
+}
+// ══ CUSTOMER REGISTRY ═════════════════════════════════
+let customers=[]; // [{name,phone,addr,type}]
+let activeCust=null; // currently matched customer
+
+function getCustKey(name){return name.trim().toLowerCase();}
+function saveCustomer(name,phone,addr,type){
+  const key=getCustKey(name);
+  const existing=customers.find(c=>getCustKey(c.name)===key);
+  if(existing){existing.phone=phone||existing.phone;existing.addr=addr||existing.addr;existing.type=type||existing.type;}
+  else{customers.push({name:name.trim(),phone,addr,type});}
+  refreshCustDatalist();
+}
+function refreshCustDatalist(){
+  const dl=document.getElementById('cust-datalist');
+  if(dl)dl.innerHTML=customers.map(c=>`<option value="${c.name}">`).join('');
+}
+function onCustNameInput(val){
+  // live-match as user types
+  const key=getCustKey(val);
+  const match=customers.find(c=>getCustKey(c.name)===key);
+  if(match&&match.name!==activeCust?.name){onCustNameSelect(val);}
+  else if(!match&&activeCust){clearCustAutofill(true);}
+}
+function onCustNameSelect(val){
+  const key=getCustKey(val);
+  const match=customers.find(c=>getCustKey(c.name)===key);
+  if(!match){activeCust=null;return;}
+  activeCust=match;
+  // Fill fields
+  document.getElementById('ocname').value=match.name;
+  document.getElementById('ocphone').value=match.phone||'';
+  document.getElementById('ocaddr').value=match.addr||'';
+  document.getElementById('octype').value=match.type||'';
+  // Dim fields and show banner
+  ['ocphone','ocaddr','octype'].forEach(id=>{const e=document.getElementById(id);if(e){e.style.opacity='.6';e.style.pointerEvents='none';}});
+  document.getElementById('ocname').readOnly=true;
+  document.getElementById('ocname').style.opacity='.6';
+  const banner=document.getElementById('cust-autofill-banner');
+  banner.classList.add('show');
+  document.getElementById('cust-matched-name').textContent=match.name;
+  document.getElementById('cust-matched-detail').textContent=[match.phone,match.addr,match.type].filter(Boolean).join(' \u00b7 ');
+}
+function clearCustAutofill(keepName=false){
+  activeCust=null;
+  ['ocphone','ocaddr','octype'].forEach(id=>{const e=document.getElementById(id);if(e){e.style.opacity='';e.style.pointerEvents='';e.value='';}});
+  const nameEl=document.getElementById('ocname');
+  nameEl.readOnly=false;nameEl.style.opacity='';
+  if(!keepName)nameEl.value='';
+  document.getElementById('cust-autofill-banner').classList.remove('show');
+}
+
+// ══ INVENTORY DEDUCTION ════════════════════════════════
+function deductInv(code,cases,pcs){
+  const inv=INV.find(d=>d.code===code);
+  if(!inv)return;
+  // Convert pcs deduction: if pcs > endP, borrow from cases
+  let remC=cases,remP=pcs;
+  let newP=(inv.endP||0)-remP;
+  let newC=(inv.endC||0)-remC;
+  if(newP<0){
+    const borrow=Math.ceil(Math.abs(newP)/inv.conv);
+    newC-=borrow;
+    newP=newP+(borrow*inv.conv);
+  }
+  inv.endC=Math.max(0,newC);
+  inv.endP=Math.max(0,newP);
+  // Recalculate values
+  inv.valC=parseFloat((inv.endC*inv.lc).toFixed(2));
+  inv.valP=parseFloat((inv.endP*(inv.lc/inv.conv)).toFixed(2));
+  inv.tv=parseFloat((inv.valC+inv.valP).toFixed(2));
+  const tot=inv.endC*inv.conv+inv.endP;
+  inv.cond=tot===0?'Out of Stock':tot<inv.conv/2?'Short on Stock':tot>=inv.conv?'Good':'Average';
+  log('inventory',`Stock deducted (order): ${code} -${cases}C -${pcs}P \u2192 ${inv.endC}C ${inv.endP}P (${inv.cond})`);
+}
+
+function submitOrder(){
+  const date=document.getElementById('od').value,ref=document.getElementById('or2').value,notes=document.getElementById('on').value;
+  const paymethod=document.getElementById('opm').value;
+  const cname=(activeCust?.name||document.getElementById('ocname').value).trim();
+  const cphone=document.getElementById('ocphone').value.trim();
+  const caddr=document.getElementById('ocaddr').value.trim();
+  const ctype=document.getElementById('octype').value;
+  if(!cname){toast('\u26a0 Please enter a customer name.');return;}
+  const oosSkipped=orderLines.filter(l=>!l.removed&&l.code&&INV.find(d=>d.code===l.code&&d.cond==='Out of Stock')).length;
+  const lines=orderLines.filter(l=>!l.removed&&l.code&&(l.qty||l.qtyp)).filter(l=>{
+    const inv=INV.find(d=>d.code===l.code);
+    return !(inv&&inv.cond==='Out of Stock');
+  }).map(l=>{const inv=INV.find(d=>d.code===l.code);return{code:l.code,desc:inv?.desc||l.code,qty:l.qty||0,qtyp:l.qtyp||0};});
+  if(!lines.length){toast('\u26a0 Add at least one SKU with a quantity (OOS items are skipped).');return;}
+  const orderNum='ORD-'+String(Date.now()).slice(-6);
+  orders.push({id:orderNum,lines,date,ref,notes,paymethod,cname,cphone,caddr,ctype,stage:'Pending',by:CU?.u,at:new Date().toLocaleString()});
+  lines.forEach(l=>deductInv(l.code,l.qty,l.qtyp));
+  saveCustomer(cname,cphone,caddr,ctype);
+  saveData();
+  rInv();rRec();rPipe();clearOF();
+  toast('\u2713 Order '+orderNum+' \u2014 '+lines.length+' SKU'+(lines.length>1?'s':'')+(oosSkipped?' ('+oosSkipped+' OOS skipped)':'')+'. Stock deducted.');
+  log('order','Order '+orderNum+': '+lines.length+' SKUs for '+cname+' [ref:'+(ref||'\u2014')+'] [pay:'+(paymethod||'N/A')+'] by '+CU?.u);
+}
+function clearOF(){
+  orderLines=[];
+  document.getElementById('order-li-body').innerHTML='';
+  ['od','or2','on'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('od').value=new Date().toISOString().split('T')[0];
+  document.getElementById('opm').value='';
+  document.getElementById('order-oos-banner').style.display='none';
+  clearCustAutofill();
+  addOrderLine();
+}
+function advOrder(idx){
+  const o=orders[idx],ci=STAGES.indexOf(o.stage);
+  if(ci<STAGES.length-1){
+    const prev=o.stage;o.stage=STAGES[ci+1];
+    log('order','Order '+o.id+': '+prev+' \u2192 '+o.stage+' by '+CU?.u);
+    if(o.stage==='Fulfilled'){
+      (o.lines||[]).forEach(l=>{
+        const inv=INV.find(d=>d.code===l.code);
+        const conv=inv?.conv||1;
+        const pcs=(l.qty||0)*conv+(l.qtyp||0);
+        const pricePc=inv?parseFloat((inv.lc/conv).toFixed(4)):0;
+        const grossSale=parseFloat((pcs*pricePc).toFixed(2));
+        const disc15=parseFloat((grossSale*0.15).toFixed(2));
+        const disc3=parseFloat((grossSale*0.03).toFixed(2));
+        const disc2=parseFloat((grossSale*0.02).toFixed(2));
+        const netSale=parseFloat((grossSale-disc15-disc3-disc2).toFixed(2));
+        dailySales.push({id:Date.now()+Math.random(),date:o.date||new Date().toISOString().split('T')[0],cname:o.cname||'\u2014',ctype:o.ctype||'',code:l.code,desc:l.desc,conv,pcs,pricePc,grossSale,disc15,disc3,disc2,netSale,discApplied:{d15:true,d3:true,d2:true},orderId:o.id,by:CU?.u});
+      });
+      log('order','Fulfilled: '+o.id+' \u2014 '+(o.lines||[]).length+' SKUs \u2014 daily sales recorded for '+o.cname);
+      rDailySales();
+    }
+    rPipe();toast('\u2192 "'+o.stage+'"');saveData();
+  }
+}
+
+// ══ DAILY SALES ════════════════════════════════════════
+function rDailySales(){
+  const filterDate=document.getElementById('ds-filter-date')?.value||'';
+  const filtered=filterDate?dailySales.filter(s=>s.date===filterDate):dailySales;
+  const today=new Date().toISOString().split('T')[0];
+  const todaySales=dailySales.filter(s=>s.date===today);
+  const todayGross=todaySales.reduce((sum,s)=>sum+s.grossSale,0);
+  const todayNet=todaySales.reduce((sum,s)=>sum+s.netSale,0);
+  const todayPcs=todaySales.reduce((sum,s)=>sum+s.pcs,0);
+  document.getElementById('ds1').textContent=p(todayGross)||'\u20b10';
+  document.getElementById('ds2').textContent=p(todayNet)||'\u20b10';
+  document.getElementById('ds3').textContent=todayPcs;
+  document.getElementById('ds4').textContent=orders.filter(o=>o.stage==='Fulfilled').length;
+  const emptyEl=document.getElementById('ds-empty');
+  const tblEl=document.getElementById('ds-tbl');
+  const summaryCard=document.getElementById('ds-summary-card');
+  if(!filtered.length){
+    emptyEl.style.display='block';tblEl.style.display='none';summaryCard.style.display='none';return;
+  }
+  emptyEl.style.display='none';tblEl.style.display='';
+  document.getElementById('ds-body').innerHTML=filtered.map(s=>{
+    const discLabel=[s.discApplied?.d15?'15%':'',s.discApplied?.d3?'3%':'',s.discApplied?.d2?'2%':''].filter(Boolean).join('+');
+    return `<tr>
+      <td style="font-size:11px;white-space:nowrap">${s.date}</td>
+      <td style="font-size:11.5px;max-width:110px">${s.cname}${s.ctype?`<br><span style="font-size:9.5px;color:var(--muted)">${s.ctype}</span>`:''}</td>
+      <td style="font-size:11px">${s.ctype||'\u2014'}</td>
+      <td><code>${s.code}</code></td>
+      <td style="font-size:11px;max-width:140px">${s.desc}</td>
+      <td class="tm">${s.conv}</td>
+      <td style="font-weight:500">${s.pcs}</td>
+      <td class="tm">${p(s.pricePc)}</td>
+      <td>${p(s.grossSale)}</td>
+      <td class="tm" style="color:var(--short-text)">${s.disc15>0?p(s.disc15):'\u2014'}</td>
+      <td class="tm" style="color:var(--short-text)">${s.disc3>0?p(s.disc3):'\u2014'}</td>
+      <td class="tm" style="color:var(--short-text)">${s.disc2>0?p(s.disc2):'\u2014'}</td>
+      <td><strong class="ta">${p(s.netSale)}</strong></td>
+      <td><span style="font-size:10px;background:var(--short-bg);color:var(--short-text);padding:1px 7px;border-radius:10px">${discLabel||'None'}</span></td>
+    </tr>`;
+  }).join('');
+  // Totals row
+  const totalGross=filtered.reduce((sum,s)=>sum+s.grossSale,0);
+  const totalDisc=filtered.reduce((sum,s)=>sum+s.disc15+s.disc3+s.disc2,0);
+  const totalNet=filtered.reduce((sum,s)=>sum+s.netSale,0);
+  const totalPcs=filtered.reduce((sum,s)=>sum+s.pcs,0);
+  const totRow=document.createElement('tr');
+  totRow.innerHTML=`<td colspan="6" style="text-align:right;font-size:11px;font-weight:600;color:var(--amber)">TOTALS</td>
+    <td style="font-weight:600">${totalPcs}</td><td></td>
+    <td><strong class="ta">${p(totalGross)}</strong></td>
+    <td class="tm" style="color:var(--short-text)" colspan="3">-${p(totalDisc)}</td>
+    <td><strong class="ta">${p(totalNet)}</strong></td><td></td>`;
+  document.getElementById('ds-body').appendChild(totRow);
+  // Day summary
+  if(filterDate){
+    summaryCard.style.display='block';
+    document.getElementById('ds-summary').innerHTML=`
+      <div class="sc"><div class="slb">Gross Sales</div><div class="sv sa">${p(totalGross)}</div></div>
+      <div class="sc"><div class="slb">Total Discounts</div><div class="sv" style="color:var(--short-text)">-${p(totalDisc)}</div></div>
+      <div class="sc"><div class="slb">Net Sales</div><div class="sv" style="color:var(--good-text)">${p(totalNet)}</div></div>
+      <div class="sc"><div class="slb">Items Sold</div><div class="sv sa">${filtered.length} lines \u00b7 ${totalPcs} pcs</div></div>`;
+  } else {
+    summaryCard.style.display='none';
+  }
+}
+function delOrder(idx){
+  const o=orders[idx];
+  if(o.stage==='Pending'&&o.lines){
+    o.lines.forEach(l=>{
+      const inv=INV.find(d=>d.code===l.code);
+      if(inv){
+        inv.endC=Math.min((inv.endC||0)+l.qty,999);inv.endP=Math.min((inv.endP||0)+l.qtyp,999);
+        inv.valC=parseFloat((inv.endC*inv.lc).toFixed(2));inv.valP=parseFloat((inv.endP*(inv.lc/inv.conv)).toFixed(2));inv.tv=parseFloat((inv.valC+inv.valP).toFixed(2));
+        const tot=inv.endC*inv.conv+inv.endP;inv.cond=tot===0?'Out of Stock':tot<inv.conv/2?'Short on Stock':tot>=inv.conv?'Good':'Average';
+      }
+    });rInv();rRec();
+  }
+  log('order','Order deleted: '+o.id+' ['+o.stage+'] for '+(o.cname||'?')+' by '+CU?.u);
+  orders.splice(idx,1);rPipe();saveData();toast('Order removed. Stock restored.');
+}
+function editOrder(idx){
+  editIdx=idx;const o=orders[idx];
+  document.getElementById('emd').value=o.date||'';document.getElementById('emr').value=o.ref||'';document.getElementById('emn').value=o.notes||'';
+  document.getElementById('em-cname').value=o.cname||'';document.getElementById('em-cphone').value=o.cphone||'';
+  document.getElementById('em-caddr').value=o.caddr||'';document.getElementById('em-ctype').value=o.ctype||'';
+  document.getElementById('em-lines').innerHTML=(o.lines||[]).map(l=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(46,43,39,.3);font-size:12px"><code style="color:var(--amber);min-width:110px">${l.code}</code><span style="flex:1;color:var(--muted);font-size:11px">${l.desc}</span><span>${l.qty}C${l.qtyp?' +'+l.qtyp+'P':''}</span></div>`).join('');
+  document.getElementById('emodal').classList.add('open');
+}
+function saveEdit(){
+  if(editIdx===null)return;const o=orders[editIdx];
+  o.date=document.getElementById('emd').value;o.ref=document.getElementById('emr').value;o.notes=document.getElementById('emn').value;
+  o.cname=document.getElementById('em-cname').value.trim()||o.cname;o.cphone=document.getElementById('em-cphone').value.trim();
+  o.caddr=document.getElementById('em-caddr').value.trim();o.ctype=document.getElementById('em-ctype').value;
+  log('order','Order edited: '+o.id+' \u2014 details updated by '+CU?.u);
+  closeM();rPipe();saveData();toast('\u2713 Order updated.');
+}
+function closeM(){document.getElementById('emodal').classList.remove('open');editIdx=null;}
+function rPipe(){
+  const cnt={Pending:0,Confirmed:0,'In Transit':0,Fulfilled:0};
+  orders.forEach(o=>cnt[o.stage]=(cnt[o.stage]||0)+1);
+  document.getElementById('op1').textContent=cnt.Pending;document.getElementById('op2').textContent=cnt.Confirmed;
+  document.getElementById('op3').textContent=cnt['In Transit'];document.getElementById('op4').textContent=cnt.Fulfilled;
+  document.getElementById('pipeboard').innerHTML=STAGES.map(stage=>{
+    const so=orders.filter(o=>o.stage===stage);
+    return `<div class="pcol"><div class="pch"><span class="pct">${stage}</span><span class="pcn">${so.length}</span></div><div class="pcards">${so.length?so.map(o=>{
+      const idx=orders.indexOf(o),isPend=stage==='Pending',isFul=stage==='Fulfilled';
+      const linesHtml=(o.lines||[]).map(l=>`<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(46,43,39,.22);font-size:10.5px"><code style="color:var(--amber);font-size:10px">${l.code}</code><span class="tm">${l.qty}C${l.qtyp?' +'+l.qtyp+'P':''}</span></div>`).join('');
+      const totC=(o.lines||[]).reduce((s,l)=>s+l.qty,0),totP=(o.lines||[]).reduce((s,l)=>s+l.qtyp,0);
+      return `<div class="pcard">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span class="pcode" style="font-size:11px">${o.id}</span><span style="font-size:9.5px;color:var(--muted)">${o.date||''}</span></div>
+        ${o.cname?`<div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px">\ud83d\udc64 ${o.cname}${o.ctype?` <span style="font-size:9px;background:var(--info-bg);color:var(--info-text);padding:0 5px;border-radius:8px">${o.ctype}</span>`:''}</div>`:''}
+        ${o.cphone?`<div class="pmeta" style="font-size:10px">\ud83d\udcde ${o.cphone}</div>`:''}
+        <div style="margin:6px 0;padding:4px 0;border-top:1px solid rgba(46,43,39,.35);border-bottom:1px solid rgba(46,43,39,.35)">${linesHtml}</div>
+        <div class="pmeta" style="font-size:10px">${(o.lines||[]).length} SKU${(o.lines||[]).length!==1?'s':''} \u00b7 ${totC}C${totP?' +'+totP+'P':''}</div>
+        ${o.ref?`<div class="pmeta" style="font-size:10px">PO: ${o.ref}</div>`:''}
+        ${o.paymethod?`<div class="pmeta" style="font-size:10px">💳 ${o.paymethod}</div>`:''}
+        ${o.notes?`<div class="pmeta tm" style="font-style:italic;font-size:10px">${o.notes}</div>`:''}
+        <div class="pmeta" style="margin-top:3px;font-size:10px">by ${o.by} \u00b7 ${o.at}</div>
+        <div class="pacts">
+          ${isPend?`<button class="btn bg3 bsm" onclick="editOrder(${idx})">&#9998; Edit</button>`:''}
+          ${!isFul?`<button class="btn bp3 bsm" onclick="advOrder(${idx})">\u2192 ${STAGES[STAGES.indexOf(stage)+1]}</button>`:''}
+          ${isPend?`<button class="btn bsm" style="background:var(--red-bg);color:#e07070;border:1px solid var(--red)" onclick="delOrder(${idx})">\u2715</button>`:''}
+        </div></div>`;
+    }).join(''):'<div class="pempty">No orders</div>'}</div></div>`;
+  }).join('');
+}
+
+// ══ SALES ═════════════════════════════════════════════
+function rSales(){
+  document.getElementById('s-body').innerHTML=SD.map(d=>`<tr>
+    <td><code>${d.code}</code></td><td style="max-width:155px;font-size:11.5px">${d.desc}</td>
+    <td class="tm">${d.conv}</td><td>${d.begC!=null?d.begC:'<span class="tm">—</span>'}</td>
+    <td class="tm">${d.cp||'—'}</td><td>${nn(d.endC)}</td><td>${nn(d.endP)}</td>
+    <td>${d.sp||'<span class="tm">—</span>'}</td>
+    <td>${d.tsC?p(d.tsC):'<span class="tm">—</span>'}</td>
+    <td>${d.tsP?p(d.tsP):'<span class="tm">—</span>'}</td>
+    <td>${d.ts?`<strong class="ta">${p(d.ts)}</strong>`:'<span class="tm">—</span>'}</td>
+    <td class="tm">${p(d.pp)}</td>
+  </tr>`).join('');
+  const tot=SD.reduce((s,d)=>s+d.ts,0);
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td colspan="10" style="text-align:right;font-weight:600;color:var(--amber);font-size:11px;padding-right:12px">GRAND TOTAL</td><td><strong class="ta">${p(tot)}</strong></td><td></td>`;
+  document.getElementById('s-body').appendChild(tr);
+}
+
+// ══ RETURNS → INVENTORY ════════════════════════════════
+function submitReturn(){
+  const code=document.getElementById('reti').value,qty=parseInt(document.getElementById('retq').value)||0;
+  const date=document.getElementById('retd').value,reason=document.getElementById('retr').value,notes=document.getElementById('retn').value;
+  if(!code||!qty||!reason){toast('⚠ Fill item, quantity, and reason.');return;}
+  const inv=INV.find(d=>d.code===code);
+  returns.push({id:returns.length+1,code,desc:inv?.desc||code,qty,date,reason,notes,status:'Pending',by:CU?.u});
+  log('return',`Return logged: ${code} × ${qty} pcs — "${reason}" by ${CU?.u}`);
+  updRet();rRetTbl();clearRet();document.getElementById('retlog').style.display='';
+  saveData();toast('✓ Return logged.');
+}
+function appReturn(i){
+  const r=returns[i];r.status='Approved';r.appBy=CU?.u;r.appAt=new Date().toLocaleString();
+  // Add pcs back to inventory
+  const inv=INV.find(d=>d.code===r.code);
+  if(inv){
+    const addC=Math.floor(r.qty/inv.conv),addP=r.qty%inv.conv;
+    inv.endC=(inv.endC||0)+addC;inv.endP=(inv.endP||0)+addP;
+    inv.valC=parseFloat((inv.endC*inv.lc).toFixed(2));
+    inv.valP=parseFloat((inv.endP*(inv.lc/inv.conv)).toFixed(2));
+    inv.tv=parseFloat((inv.valC+inv.valP).toFixed(2));
+    const tot=inv.endC*inv.conv+(inv.endP||0);
+    inv.cond=tot===0?'Out of Stock':tot<inv.conv/2?'Short on Stock':tot>=inv.conv?'Good':'Average';
+    log('inventory',`Inventory updated from return approval: ${r.code} +${r.qty} pcs → ${inv.endC}C ${inv.endP}P (${inv.cond})`);
+    rInv();rRec();
+  }
+  log('return',`Return #${r.id} approved: ${r.code} × ${r.qty} pcs added to inventory by ${CU?.u}`);
+  updRet();rRetTbl();saveData();toast(`✓ Approved. ${r.code} +${r.qty} pcs → inventory.`);
+}
+function updRet(){
+  document.getElementById('rt1').textContent=returns.length;
+  document.getElementById('rt2').textContent=returns.reduce((s,r)=>s+r.qty,0);
+  document.getElementById('rt3').textContent=returns.filter(r=>r.status==='Pending').length;
+  document.getElementById('rt4').textContent=returns.filter(r=>r.status==='Approved').length;
+}
+function rRetTbl(){
+  document.getElementById('ret-tbody').innerHTML=returns.map((r,i)=>`<tr>
+    <td class="tm">${r.id}</td><td><code>${r.code}</code></td>
+    <td style="font-size:11px">${r.desc}</td>
+    <td>${r.qty} pcs</td><td style="font-size:11px">${r.reason}</td>
+    <td class="tm" style="font-size:11px">${r.date}</td>
+    <td>${r.status==='Pending'?'<span class="badge ba2">Pending</span>':'<span class="badge bg2">Approved ✓</span>'}</td>
+    <td>${r.status==='Pending'?`<button class="btn bok bsm" onclick="appReturn(${i})">✓ Approve</button>`:`<span class="tm" style="font-size:10px">by ${r.appBy||'?'}</span>`}</td>
+  </tr>`).join('');
+}
+function clearRet(){['reti','retq','retd','retr','retn'].forEach(id=>{const e=document.getElementById(id);if(e){e.tagName==='SELECT'?e.value='':e.value=id==='retd'?new Date().toISOString().split('T')[0]:'';}});}
+
+// ══ DELIVERIES — MULTI-LINE ═══════════════════════════
+let delLines=[];
+
+function addDelLine(){
+  const idx=delLines.length;
+  delLines.push({code:'',cases:0,pcs:0});
+  const tr=document.createElement('tr');
+  tr.id=`dli-${idx}`;
+  tr.innerHTML=`<td class="tm" style="font-size:11px;width:24px">${idx+1}</td>
+    <td><select onchange="delLines[${idx}].code=this.value" style="min-width:200px;font-size:12px;padding:5px 8px">${orderLineSkuHtml()}</select></td>
+    <td><input type="number" min="0" placeholder="0" style="width:68px;padding:5px 7px;font-size:12px" oninput="delLines[${idx}].cases=parseInt(this.value)||0"></td>
+    <td><input type="number" min="0" placeholder="0" style="width:68px;padding:5px 7px;font-size:12px" oninput="delLines[${idx}].pcs=parseInt(this.value)||0"></td>
+    <td><button class="li-rm" onclick="removeDelLine(${idx})" title="Remove">&times;</button></td>`;
+  document.getElementById('del-li-body').appendChild(tr);
+}
+function removeDelLine(idx){
+  const row=document.getElementById(`dli-${idx}`);
+  if(row)row.remove();
+  delLines[idx]={code:'',cases:0,pcs:0,removed:true};
+}
+function addDel(){
+  const driver=document.getElementById('dld').value.trim(),dest=document.getElementById('dlde').value.trim();
+  const dt=document.getElementById('dldt').value;
+  const cname=document.getElementById('dlcname').value.trim(),cphone=document.getElementById('dlcphone').value.trim();
+  const ctype=document.getElementById('dlctype').value,dlnotes=document.getElementById('dlnotes').value.trim();
+  if(!driver||!dest){toast('\u26a0 Driver and destination required.');return;}
+  if(!cname){toast('\u26a0 Please enter a customer / recipient name.');return;}
+  const valid=delLines.filter(l=>!l.removed&&l.code&&(l.cases||l.pcs));
+  if(!valid.length){toast('\u26a0 Add at least one item with a quantity.');return;}
+  const itemsArr=valid.map(l=>{
+    const desc=INV.find(d=>d.code===l.code)?.desc||l.code;
+    return {code:l.code,desc,cases:l.cases,pcs:l.pcs};
+  });
+  const itemsSummary=itemsArr.map(i=>`${i.code} \u00d7${i.cases}C${i.pcs?' '+i.pcs+'P':''}`).join(', ');
+  deliveries.push({id:deliveries.length+1,driver,dest,cname,cphone,ctype,dlnotes,items:itemsArr,itemsSummary,dt,stage:'Load',by:CU?.u});
+  log('delivery',`Delivery #${deliveries.length} created: ${driver} \u2192 ${dest} for ${cname} [${itemsSummary}] by ${CU?.u}`);
+  rDels();saveData();
+  ['dld','dlde','dldt','dlcname','dlcphone','dlctype','dlnotes'].forEach(id=>document.getElementById(id).value='');
+  delLines=[];document.getElementById('del-li-body').innerHTML='';
+  addDelLine();
+  toast(`\u2713 Delivery added \u2014 ${itemsArr.length} item${itemsArr.length>1?'s':''} for ${cname}.`);
+}
+function advDel(i){
+  const stages=['Load','In Transit','Delivered'],ci=stages.indexOf(deliveries[i].stage);
+  if(ci<2){const prev=deliveries[i].stage;deliveries[i].stage=stages[ci+1];log('delivery',`Delivery #${deliveries[i].id}: ${prev} \u2192 ${deliveries[i].stage}`);rDels();saveData();}
+}
+function rDels(){
+  const stages=['Load','In Transit','Delivered'];
+  const el=document.getElementById('dllist');
+  if(!deliveries.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:22px 0">No deliveries yet.</div>';return;}
+  el.innerHTML=deliveries.map((d,i)=>{
+    const ci=stages.indexOf(d.stage);
+    const tr=stages.map((s,si)=>`<div class="${si<ci?'sdo':si===ci?'sac':'spd'}"><div class="sdot">${si+1}</div></div>${si<2?`<div class="sln ${si<ci?'dn':'pd'}"></div>`:''}`).join('');
+    // Build items list
+    const itemsHtml=Array.isArray(d.items)
+      ?d.items.map(it=>`<span style="display:inline-block;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:1px 7px;margin:2px 3px 2px 0;font-size:10.5px"><code style="color:var(--amber)">${it.code}</code> &times;${it.cases}C${it.pcs?' '+it.pcs+'P':''}</span>`).join('')
+      :`<span style="font-size:11px;color:var(--muted)">${d.items||''}</span>`;
+    return `<div class="dc">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <strong style="font-size:12.5px">#${d.id} \u2014 ${d.driver}</strong>
+            ${d.cname?`<span style="font-size:11px;background:var(--info-bg);color:var(--info-text);padding:1px 8px;border-radius:10px">\ud83d\udc64 ${d.cname}${d.ctype?' \u00b7 '+d.ctype:''}</span>`:''}
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">\ud83d\udccd ${d.dest}${d.dt?' \u00b7 '+d.dt:''}</div>
+          ${d.cphone?`<div style="font-size:11px;color:var(--muted)">\ud83d\udcde ${d.cphone}</div>`:''}
+          ${d.dlnotes?`<div style="font-size:10.5px;color:var(--dim);font-style:italic;margin-top:2px">${d.dlnotes}</div>`:''}
+          <div style="margin-top:6px">${itemsHtml}</div>
+        </div>
+        <div style="flex-shrink:0;margin-left:10px">${d.stage!=='Delivered'?`<button class="btn bg3 bsm" onclick="advDel(${i})">Advance \u2192</button>`:'<span class="badge bg2">Delivered</span>'}</div>
+      </div>
+      <div class="str">${tr}</div>
+      <div style="display:flex;">${stages.map((s,si)=>`<div style="flex:1;font-size:10px;color:${si===ci?'var(--amber)':'var(--dim)'}">${s}</div>`).join('')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('dl1').textContent=deliveries.filter(d=>d.stage!=='Delivered').length;
+  document.getElementById('dl2').textContent=deliveries.filter(d=>d.stage==='Delivered').length;
+  document.getElementById('dl3').textContent=deliveries.filter(d=>d.stage==='Load').length;
+  document.getElementById('dl4').textContent=[...new Set(deliveries.map(d=>d.driver))].length;
+}
+
+// ══ AUDIT LOG ═════════════════════════════════════════
+const LC={auth:'var(--amber)',receiving:'var(--info-text)',order:'var(--pur-text)',return:'var(--short-text)',inventory:'var(--good-text)',delivery:'#5aabea',system:'var(--muted)'};
+function log(type,msg){auditLog.unshift({type,msg,time:new Date().toLocaleTimeString(),user:CU?.u||'—'});renderAudit();if(type!=='system')saveData();}
+function renderAudit(){
+  const f=document.getElementById('alf')?.value||'';
+  const filtered=f?auditLog.filter(e=>e.type===f):auditLog;
+  document.getElementById('al1').textContent=auditLog.length;
+  document.getElementById('al2').textContent=auditLog.filter(e=>e.type==='order').length;
+  document.getElementById('al3').textContent=auditLog.filter(e=>e.type==='return').length;
+  document.getElementById('al4').textContent=auditLog.filter(e=>e.type==='delivery').length;
+  const el=document.getElementById('allist');
+  if(!filtered.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:26px 0">No events recorded.</div>';return;}
+  el.innerHTML=filtered.map(e=>`<div class="le">
+    <div class="ld" style="background:${LC[e.type]||'var(--muted)'}"></div>
+    <div><div class="lm">${e.msg}</div>
+      <div class="lmt">${e.time} · <span class="badge" style="background:var(--surface);color:var(--muted);padding:0 6px;font-size:10px">${e.type}</span> · ${e.user}</div>
+    </div>
+  </div>`).join('');
+}
+function clearAudit(){auditLog=[];renderAudit();saveData();toast('Audit log cleared.');}
+
+// ══ REPORTS ═══════════════════════════════════════════
+let chartsOk=false;
+function rReports(){
+  if(chartsOk)return;chartsOk=true;
+  const top=[...SD].filter(d=>d.ts>0).sort((a,b)=>b.ts-a.ts).slice(0,10);
+  const cols=['#e8962a','#d4a635','#c4781a','#b85c0a','#f0c060','#e07030','#d04820','#c03010','#b02000','#a01000'];
+  new Chart(document.getElementById('ch1'),{type:'bar',data:{labels:top.map(d=>d.code),datasets:[{data:top.map(d=>d.ts),backgroundColor:cols,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8a857d',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#8a857d',font:{size:9},callback:v=>'₱'+v.toLocaleString()},grid:{color:'rgba(255,255,255,.04)'}}}}});
+  const cc={Good:0,Average:0,'Short on Stock':0,'Out of Stock':0};INV.forEach(d=>cc[d.cond]=(cc[d.cond]||0)+1);
+  new Chart(document.getElementById('ch2'),{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#3a7d44','#7a6020','#7a3a20','#3a2020'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8a857d',font:{size:11}}}}}});
+  const ins=INV.filter(d=>d.tv>0).sort((a,b)=>b.tv-a.tv);
+  new Chart(document.getElementById('ch3'),{type:'bar',data:{labels:ins.map(d=>d.code),datasets:[{data:ins.map(d=>d.tv),backgroundColor:'rgba(232,150,42,.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8a857d',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#8a857d',font:{size:9},callback:v=>'₱'+v.toLocaleString()},grid:{color:'rgba(255,255,255,.04)'}}}}});
+}
+
+// ══ BACKUP ════════════════════════════════════════════
+function bk(type){
+  const dl=(c,f,m)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:m}));a.download=f;a.click();};
+  const csv=(arr)=>{const k=Object.keys(arr[0]);return[k.join(','),...arr.map(r=>k.map(k2=>typeof r[k2]==='string'?`"${r[k2]}"`:r[k2]??'').join(','))].join('\n');};
+  if(type==='full'){dl(JSON.stringify({INV,SD,orders,returns,deliveries,auditLog,by:CU?.u,at:new Date().toISOString()},null,2),'yb_full_backup.json','application/json');}
+  else if(type==='inventory'){dl(csv(INV),'yb_inventory.csv','text/csv');}
+  else if(type==='sales'){dl(csv(SD),'yb_sales.csv','text/csv');}
+  else if(type==='receiving'){dl(csv(INV.map(d=>({code:d.code,desc:d.desc,conv:d.conv,endC:d.endC,endP:d.endP,begC:d.begC,begP:d.begP,cond:d.cond,status:d.rs}))),'yb_receiving.csv','text/csv');}
+  else if(type==='orders'){dl(csv(orders.length?orders:[{note:'No orders'}]),'yb_orders.csv','text/csv');}
+  else if(type==='returns'){dl(csv(returns.length?returns:[{note:'No returns'}]),'yb_returns.csv','text/csv');}
+  document.getElementById('bklast').textContent=new Date().toLocaleString();
+  log('system',`Data exported: ${type} by ${CU?.u}`);toast(`✓ ${type} exported.`);
+}
+
+// ══ NAVIGATION ════════════════════════════════════════
+const PM={receiving:{t:'Receiving Stocks',s:'Head Office \u00b7 Mar 4\u201314, 2026 \u00b7 Approve items to confirm to inventory'},inventory:{t:'Warehouse Inventory',s:'Live view \u2014 updates on return approval'},orders:{t:'Orders',s:'Pipeline: Pending (editable) \u2192 Confirmed \u2192 In Transit \u2192 Fulfilled'},dailysales:{t:'Daily Sales',s:'Auto-populated from Fulfilled orders \u00b7 Tracks pcs, pricing, and discounts'},sales:{t:'Sales Overview',s:'Overall sales by product \u00b7 Mar 4\u201314, 2026'},reports:{t:'Monthly Reports',s:'Analytics & charts for current period'},returns:{t:'Returns',s:'Approved returns auto-update inventory'},deliveries:{t:'Deliveries',s:'Driver & delivery tracking'},auditlogs:{t:'Audit Logs',s:'Full system event history \u2014 every action attributed to user'},backup:{t:'Backup System',s:'Export data as CSV or full JSON snapshot'},expiration:{t:'Expiration Tracking',s:'Monitor product expiry dates for traceability & compliance'},freezer1:{t:'Freezer 1',s:'Cold storage inventory \u00b7 Temperature monitoring'},freezer2:{t:'Freezer 2',s:'Cold storage inventory \u00b7 Temperature monitoring'},freezer3:{t:'Freezer 3',s:'Cold storage inventory \u00b7 Temperature monitoring'}};
+function nav(page){
+  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
+  document.querySelector(`.ni[onclick="nav('${page}')"]`).classList.add('active');
+  document.getElementById('sec-'+page).classList.add('active');
+  document.getElementById('pt').textContent=PM[page].t;document.getElementById('ps').textContent=PM[page].s;
+  if(page==='reports')setTimeout(rReports,80);
+  if(page==='dailysales')rDailySales();
+  if(page==='backup')rBackupStats();
+  if(page==='expiration')rExpiration();
+  if(page==='freezer1')rFreezer1();
+  if(page==='freezer2')rFreezer2();
+  if(page==='freezer3')rFreezer3();
+}
+function toggleWarehouse(){
+  const dd = document.getElementById('warehouse-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+function filt(inp,tid){const q=inp.value.toLowerCase();document.querySelectorAll(`#${tid} tbody tr`).forEach(tr=>tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none');}
+function filtCol(sel,tid,col){const q=sel.value;document.querySelectorAll(`#${tid} tbody tr`).forEach(tr=>tr.style.display=!q||(tr.cells[col]&&tr.cells[col].textContent.includes(q))?'':'none');}
+function xTbl(tid,fn){const rows=[];document.querySelectorAll(`#${tid} tr`).forEach(tr=>rows.push([...tr.querySelectorAll('th,td')].map(c=>c.textContent.trim().replace(/\s+/g,' ')).join(',')));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download=fn+'.csv';a.click();toast('✓ Exported.');}
+setInterval(()=>document.getElementById('clock').textContent=new Date().toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'}),1000);
+
+// ══ AUTO-SAVE & EMERGENCY SAVE ════════════════════════
+// Auto-save every 30 seconds to prevent data loss on unexpected closure
+let autoSaveInterval=null;
+function startAutoSave(){
+  if(autoSaveInterval)clearInterval(autoSaveInterval);
+  autoSaveInterval=setInterval(()=>{
+    if(CU){
+      saveData().then(success=>{
+        if(success){
+          console.log('Auto-saved at',new Date().toLocaleTimeString());
+          // Show brief save indicator
+          const statusEl=document.getElementById('save-status');
+          if(statusEl){
+            statusEl.textContent='💾 Auto-saved';
+            statusEl.style.opacity='1';
+            setTimeout(()=>{statusEl.style.opacity='0';},1500);
+          }
+        }
+      }).catch(e=>console.warn('Auto-save failed:',e));
+    }
+  },15000); // Save every 15 seconds (more frequent)
+}
+
+// Save data immediately when user closes the page/browser/tab
+function setupEmergencySave(){
+  // Force immediate localStorage save on any data change
+  window.addEventListener('beforeunload',(e)=>{
+    emergencySave();
+  });
+
+  // pagehide: more reliable for mobile and modern browsers
+  window.addEventListener('pagehide',(e)=>{
+    emergencySave();
+  });
+
+  // Also save on visibility change (when tab becomes hidden)
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden && CU){
+      emergencySave();
+    }
+  });
+}
+
+// Synchronous emergency save - prioritizes speed over completeness
+function emergencySave(){
+  if(!CU)return;
+
+  try{
+    const snapshot={
+      INV:INV.map(d=>({...d})),
+      SD:SD.map(d=>({...d})),
+      orders:orders.map(d=>({...d})),
+      returns:returns.map(d=>({...d})),
+      deliveries:deliveries.map(d=>({...d})),
+      dailySales:dailySales.map(d=>({...d})),
+      customers:customers.map(d=>({...d})),
+      auditLog:auditLog.map(d=>({...d})),
+      savedAt:new Date().toISOString(),
+      emergency:true
+    };
+    localStorage.setItem(STORE_KEY,JSON.stringify(snapshot));
+    console.log('Emergency save completed to localStorage');
+  }catch(e){
+    console.warn('Emergency save failed:',e);
+  }
+}
+
+async function forceSave(){
+  const btn=document.querySelector('.savebtn');
+  const statusEl=document.getElementById('save-status');
+  if(btn){
+    btn.disabled=true;
+    btn.textContent='💾 Saving...';
+  }
+  if(statusEl){
+    statusEl.textContent='💾 Saving...';
+    statusEl.style.opacity='1';
+  }
+
+  try{
+    await saveData();
+    emergencySave(); // Also force immediate localStorage save
+    toast('✅ Data saved successfully!');
+    console.log('Manual save completed at',new Date().toLocaleTimeString());
+    if(statusEl){
+      statusEl.textContent='✅ Saved';
+      statusEl.style.color='var(--good-text)';
+      setTimeout(()=>{statusEl.style.opacity='0';},2000);
+    }
+  }catch(e){
+    console.warn('Manual save failed:',e);
+    toast('❌ Save failed - check console');
+    if(statusEl){
+      statusEl.textContent='❌ Save failed';
+      statusEl.style.color='var(--oos-text)';
+      statusEl.style.opacity='1';
+      setTimeout(()=>{statusEl.style.opacity='0';},3000);
+    }
+  }finally{
+    if(btn){
+      btn.disabled=false;
+      btn.textContent='💾 Save Now';
+    }
+  }
+}
+
+// ══ DATABASE (IndexedDB) ═══════════════════════════════
+const STORE_KEY='yb_data_v27';
+const DB_NAME='YB_DB_V27';
+const DB_VERSION=1;
+const DB_SCHEMA={INV:{keyPath:'code'},SD:{keyPath:'code'},orders:{autoIncrement:true},returns:{autoIncrement:true},deliveries:{autoIncrement:true},dailySales:{autoIncrement:true},customers:{autoIncrement:true},auditLog:{autoIncrement:true}};
+function openDb(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      Object.entries(DB_SCHEMA).forEach(([name,opts])=>{if(!db.objectStoreNames.contains(name))db.createObjectStore(name,opts);});
+    };
+    req.onsuccess=e=>resolve(e.target.result);
+    req.onerror=e=>reject(e.target.error);
+  });
+}
+function dbGetAll(storeName){
+  return openDb().then(db=>new Promise((resolve,reject)=>{
+    const tx=db.transaction(storeName,'readonly');
+    const req=tx.objectStore(storeName).getAll();
+    req.onsuccess=()=>{resolve(req.result);db.close();};
+    req.onerror=()=>{reject(req.error);db.close();};
+  }));
+}
+function saveData(){
+  return new Promise((resolve,reject)=>{
+    const snapshot={INV:INV.map(d=>({...d})),SD:SD.map(d=>({...d})),orders:orders.map(d=>({...d})),returns:returns.map(d=>({...d})),deliveries:deliveries.map(d=>({...d})),dailySales:dailySales.map(d=>({...d})),customers:customers.map(d=>({...d})),auditLog:auditLog.map(d=>({...d})),freezerSettings:JSON.parse(JSON.stringify(freezerSettings))};
+
+    // Always save to localStorage immediately (synchronous)
+    try{
+      localStorage.setItem(STORE_KEY,JSON.stringify({...snapshot,savedAt:new Date().toISOString()}));
+    }catch(e){
+      console.warn('localStorage save failed:',e);
+    }
+
+    // Then save to IndexedDB (asynchronous)
+    openDb().then(db=>{
+      const tx=db.transaction(Object.keys(DB_SCHEMA),'readwrite');
+      const dataMap={INV:snapshot.INV,SD:snapshot.SD,orders:snapshot.orders,returns:snapshot.returns,deliveries:snapshot.deliveries,dailySales:snapshot.dailySales,customers:snapshot.customers,auditLog:snapshot.auditLog};
+      Object.entries(dataMap).forEach(([storeName,items])=>{const store=tx.objectStore(storeName);store.clear();items.forEach(item=>store.put(item));});
+      tx.oncomplete=()=>{db.close();resolve(true);};
+      tx.onerror=()=>{console.warn('YB DB save failed:',tx.error);db.close();resolve(false);}; // Don't reject, localStorage is saved
+    }).catch(e=>{console.warn('YB DB open failed:',e);resolve(false);}); // Don't reject, localStorage is saved
+  });
+}
+async function loadData(){
+  try{
+    const results=await Promise.all(Object.keys(DB_SCHEMA).map(storeName=>dbGetAll(storeName).catch(()=>[])));
+    const loaded=Object.fromEntries(Object.keys(DB_SCHEMA).map((name,i)=>[name,results[i]]));
+    const hasDbData=Object.values(loaded).some(arr=>arr.length);
+    if(hasDbData){
+      if(Array.isArray(loaded.INV)&&loaded.INV.length){INV=loaded.INV;INV.forEach(item=>{if(!item.storage)item.storage='Unassigned';});}
+      if(Array.isArray(loaded.SD)&&loaded.SD.length)SD=loaded.SD;
+      if(Array.isArray(loaded.orders))orders.splice(0,orders.length,...loaded.orders);
+      if(Array.isArray(loaded.returns))returns.splice(0,returns.length,...loaded.returns);
+      if(Array.isArray(loaded.deliveries))deliveries.splice(0,deliveries.length,...loaded.deliveries);
+      if(Array.isArray(loaded.dailySales))dailySales.splice(0,dailySales.length,...loaded.dailySales);
+      if(Array.isArray(loaded.customers))customers.splice(0,customers.length,...loaded.customers);
+      if(Array.isArray(loaded.auditLog))auditLog.splice(0,auditLog.length,...loaded.auditLog);
+      const rawLocal=localStorage.getItem(STORE_KEY);
+      if(rawLocal){
+        const snap=JSON.parse(rawLocal);
+        if(snap.freezerSettings) freezerSettings={...DEFAULT_FREEZER_SETTINGS,...snap.freezerSettings};
+      }
+      return true;
+    }
+    const raw=localStorage.getItem(STORE_KEY);
+    if(!raw)return false;
+    const snap=JSON.parse(raw);
+    if(snap.INV&&snap.INV.length){INV=snap.INV;INV.forEach(item=>{if(!item.storage)item.storage='Unassigned';});}
+    if(Array.isArray(snap.SD))SD=snap.SD;
+    if(Array.isArray(snap.orders))orders.splice(0,orders.length,...snap.orders);
+    if(Array.isArray(snap.returns))returns.splice(0,returns.length,...snap.returns);
+    if(Array.isArray(snap.deliveries))deliveries.splice(0,deliveries.length,...snap.deliveries);
+    if(Array.isArray(snap.dailySales))dailySales.splice(0,dailySales.length,...snap.dailySales);
+    if(Array.isArray(snap.customers))customers.splice(0,customers.length,...snap.customers);
+    if(Array.isArray(snap.auditLog))auditLog.splice(0,auditLog.length,...snap.auditLog);
+    if(snap.freezerSettings) freezerSettings={...DEFAULT_FREEZER_SETTINGS,...snap.freezerSettings};
+    saveData();
+    return true;
+  }catch(e){console.warn('YB loadData failed:',e);return false;}
+}
+
+function clearSavedData(){
+  if(!confirm('⚠ This will permanently erase ALL saved data (orders, returns, deliveries, daily sales, audit log, customers). Inventory will reset to defaults.\n\nContinue?'))return;
+  localStorage.removeItem(STORE_KEY);
+  openDb().then(db=>{
+    const tx=db.transaction(Object.keys(DB_SCHEMA),'readwrite');
+    Object.keys(DB_SCHEMA).forEach(storeName=>tx.objectStore(storeName).clear());
+    tx.oncomplete=()=>db.close();
+    tx.onerror=()=>{console.warn('YB DB clear failed:',tx.error);db.close();};
+  }).catch(()=>{}).finally(()=>location.reload());
+}
+function rBackupStats(){
+  document.getElementById('bk-ord-cnt').textContent=orders.length;
+  document.getElementById('bk-ret-cnt').textContent=returns.length;
+  document.getElementById('bk-del-cnt').textContent=deliveries.length;
+}
+
+// ══ AUTO-SAVE & EMERGENCY SAVE ════════════════════════
+
+async function checkDataIntegrity(){
+  console.log('=== DATA INTEGRITY CHECK ===');
+  console.log('localStorage:', localStorage.getItem(STORE_KEY) ? 'Present' : 'Missing');
+  console.log('Inventory items:', INV.length);
+  console.log('Orders:', orders.length);
+  console.log('Returns:', returns.length);
+  console.log('Deliveries:', deliveries.length);
+  console.log('Daily Sales:', dailySales.length);
+  console.log('Customers:', customers.length);
+  console.log('Audit Log entries:', auditLog.length);
+
+  // Test localStorage save
+  try{
+    const testData = { test: 'integrity_check', timestamp: new Date().toISOString() };
+    localStorage.setItem('test_save', JSON.stringify(testData));
+    const retrieved = JSON.parse(localStorage.getItem('test_save'));
+    console.log('localStorage test:', retrieved.test === 'integrity_check' ? '✅ Working' : '❌ Failed');
+    localStorage.removeItem('test_save');
+  }catch(e){
+    console.log('localStorage test: ❌ Failed -', e.message);
+  }
+
+  // Test IndexedDB
+  try{
+    const db = await openDb();
+    console.log('IndexedDB test: ✅ Connected');
+    db.close();
+  }catch(e){
+    console.log('IndexedDB test: ❌ Failed -', e.message);
+  }
+
+  console.log('=== END CHECK ===');
+}
+
+// Make it available globally for debugging
+window.checkDataIntegrity = checkDataIntegrity;
+async function init(){
+  await loadData();
+  ensureStorage();
+  setupEmergencySave();
+  startAutoSave();
+  rRec();rInv();rSales();rPipe();rDels();rDailySales();
+  updateFreezerStats();
+  if(returns.length){document.getElementById('retlog').style.display='';updRet();rRetTbl();}
+  popSel('reti');
+  // Seed first line item row for orders and deliveries
+  addOrderLine();
+  addDelLine();
+  refreshCustDatalist();
+  document.getElementById('od').value=new Date().toISOString().split('T')[0];
+  document.getElementById('retd').value=new Date().toISOString().split('T')[0];
+  log('system',`System initialized · Yummy Bella HO v2.7 · data ${localStorage.getItem(STORE_KEY)?'restored':'fresh'}`);
+  saveData();
+}
+</script>
+</body>
+</html>
